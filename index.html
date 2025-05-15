@@ -3,21 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple PDF Editor</title>
+  <title>Inclusive PDF Editor</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #drop-zone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #666;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .file-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: grab;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .file-actions button {
+      padding: 2px 6px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Simple PDF Editor</h1>
+  <h1>Inclusive PDF Editor</h1>
 
+  <!-- Upload by button or drag-and-drop -->
   <input type="file" id="upload" accept="application/pdf" multiple />
+  <div id="drop-zone">Drag and drop PDF files here</div>
+
+  <!-- Merge action -->
   <button id="merge-btn">Merge PDFs</button>
 
-  <!-- ✅ Persistent file queue list -->
+  <!-- Uploaded files list -->
   <div id="file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
     <strong>Files queued for merging:</strong>
-    <ul id="file-names" style="list-style: none; padding: 0; margin-top: 0.5rem;"></ul>
+    <div id="file-queue" aria-label="List of uploaded files"></div>
   </div>
 
+  <!-- PDF edit controls -->
   <div id="page-controls" style="margin-top: 1rem; display: none;">
     <label for="delete-page">Page to delete:</label>
     <input type="number" id="delete-page" min="1" />
@@ -25,16 +62,20 @@
     <button id="download-btn">Download Edited PDF</button>
   </div>
 
+  <!-- Navigation -->
   <div id="nav-buttons" style="margin-top: 1rem; display: none;">
     <button id="prev-page">⬅️ Previous</button>
     <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
     <button id="next-page">Next ➡️</button>
   </div>
 
+  <!-- PDF Preview Canvas -->
   <canvas id="pdf-canvas"></canvas>
 
+  <!-- Libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
