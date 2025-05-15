@@ -9,37 +9,36 @@
 <body>
   <h1>Simple PDF Editor</h1>
 
-  <!-- File input for uploading one or more PDFs -->
+  <!-- File upload -->
   <input type="file" id="upload" accept="application/pdf" multiple />
 
-  <!-- Button to manually trigger merging -->
+  <!-- File list preview -->
+  <div id="file-list" style="margin-top: 1rem;"></div>
+
+  <!-- Merge button -->
   <button id="merge-btn">Merge PDFs</button>
-  
-  <!-- Controls for deleting a page and downloading the result -->
-  <div id="page-controls" style="margin-top: 1rem; display:none;">
+
+  <!-- Controls for delete & download -->
+  <div id="page-controls" style="margin-top: 1rem; display: none;">
     <label for="delete-page">Page to delete:</label>
     <input type="number" id="delete-page" min="1" />
     <button id="delete-btn">Delete Page</button>
     <button id="download-btn">Download Edited PDF</button>
   </div>
 
-  <!-- Navigation buttons for viewing pages -->
+  <!-- Navigation -->
   <div id="nav-buttons" style="margin-top: 1rem; display: none;">
     <button id="prev-page">⬅️ Previous</button>
     <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
     <button id="next-page">Next ➡️</button>
   </div>
 
-  <!-- Where the PDF will be previewed -->
+  <!-- PDF preview -->
   <canvas id="pdf-canvas"></canvas>
 
-  <!-- Load pdf-lib for editing PDFs -->
+  <!-- Libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-
-  <!-- Load pdf.js for rendering PDFs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
-
-  <!-- Your main JavaScript logic -->
   <script src="script.js"></script>
 </body>
 </html>
