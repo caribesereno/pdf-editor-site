@@ -17,23 +17,11 @@ const nextBtn = document.getElementById("next-page");
 const pageNumDisplay = document.getElementById("page-num");
 const pageCountDisplay = document.getElementById("page-count");
 
-input.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (file && file.type === "application/pdf") {
-    const arrayBuffer = await file.arrayBuffer();
-    currentPdfBytes = arrayBuffer;
-    currentPdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+const mergeBtn = document.getElementById("merge-btn");
+let uploadedFiles = [];
 
-    totalPages = currentPdfDoc.getPageCount();
-    currentPage = 1;
-
-    pageControls.style.display = "block";
-    navButtons.style.display = "block";
-    pageInput.max = totalPages;
-    pageCountDisplay.textContent = totalPages;
-
-    renderPage(currentPage);
-  }
+input.addEventListener("change", (e) => {
+  uploadedFiles = Array.from(e.target.files);
 });
 
 async function renderPage(pageNumber) {
@@ -110,4 +98,34 @@ downloadBtn.addEventListener("click", async () => {
   a.download = "edited.pdf";
   a.click();
   URL.revokeObjectURL(url);
+});
+
+mergeBtn.addEventListener("click", async () => {
+  if (uploadedFiles.length === 0) {
+    alert("Please select at least one PDF file to merge.");
+    return;
+  }
+
+  const mergedPdf = await PDFLib.PDFDocument.create();
+
+  for (const file of uploadedFiles) {
+    const bytes = await file.arrayBuffer();
+    const tempPdf = await PDFLib.PDFDocument.load(bytes);
+    const copiedPages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  }
+
+  currentPdfDoc = mergedPdf;
+  currentPdfBytes = await mergedPdf.save();
+
+  totalPages = currentPdfDoc.getPageCount();
+  currentPage = 1;
+
+  pageControls.style.display = "block";
+  navButtons.style.display = "block";
+  pageInput.max = totalPages;
+  pageCountDisplay.textContent = totalPages;
+
+  renderPage(currentPage);
+  alert("PDFs merged successfully!");
 });
