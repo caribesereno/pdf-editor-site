@@ -1,3 +1,6 @@
+window.pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+
 let currentPdfBytes = null;
 let currentPdfDoc = null;
 let currentPage = 1;
@@ -25,10 +28,6 @@ input.addEventListener("change", (e) => {
 });
 
 async function renderPage(pageNumber) {
-  const pdfjsLib = window["pdfjs-dist/build/pdf"];
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
-
   const loadingTask = pdfjsLib.getDocument({ data: currentPdfBytes });
   const pdf = await loadingTask.promise;
 
@@ -77,6 +76,7 @@ deleteBtn.addEventListener("click", async () => {
 
   currentPdfDoc.removePage(pageToDelete - 1);
   currentPdfBytes = await currentPdfDoc.save();
+  currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes); // re-load for delete too
 
   totalPages = currentPdfDoc.getPageCount();
   pageInput.max = totalPages;
@@ -115,8 +115,8 @@ mergeBtn.addEventListener("click", async () => {
     copiedPages.forEach((page) => mergedPdf.addPage(page));
   }
 
-  currentPdfDoc = mergedPdf;
   currentPdfBytes = await mergedPdf.save();
+  currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes); // <- Critical fix!
 
   totalPages = currentPdfDoc.getPageCount();
   currentPage = 1;
