@@ -61,4 +61,3 @@ downloadBtn.addEventListener("click", async () => {
   a.click();
   URL.revokeObjectURL(url);
 });
-*Updated index.html for delete feature*
