@@ -8,13 +8,23 @@
 </head>
 <body>
   <h1>Simple PDF Editor</h1>
+
   <input type="file" id="upload" accept="application/pdf" />
+
   <div id="page-controls" style="margin-top: 1rem; display:none;">
     <label for="delete-page">Page to delete:</label>
     <input type="number" id="delete-page" min="1" />
     <button id="delete-btn">Delete Page</button>
     <button id="download-btn">Download Edited PDF</button>
   </div>
+
+  <!-- ✅ ADD THIS: Navigation buttons go here -->
+  <div id="nav-buttons" style="margin-top: 1rem; display: none;">
+    <button id="prev-page">⬅️ Previous</button>
+    <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
+    <button id="next-page">Next ➡️</button>
+  </div>
+
   <canvas id="pdf-canvas"></canvas>
 
   <!-- Load pdf-lib -->
