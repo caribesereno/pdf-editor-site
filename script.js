@@ -17,7 +17,8 @@ input.addEventListener("change", async (e) => {
     currentPdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
 
     pageControls.style.display = "block";
-    renderPage(1); // Show first page
+    pageInput.max = currentPdfDoc.getPageCount();
+    renderPage(1); // Default preview: page 1
   }
 });
 
@@ -28,12 +29,26 @@ async function renderPage(pageNumber) {
 
   const loadingTask = pdfjsLib.getDocument({ data: currentPdfBytes });
   const pdf = await loadingTask.promise;
+
+  if (pageNumber < 1 || pageNumber > pdf.numPages) {
+    alert("Invalid page number.");
+    return;
+  }
+
   const page = await pdf.getPage(pageNumber);
   const viewport = page.getViewport({ scale: 1.5 });
   canvas.width = viewport.width;
   canvas.height = viewport.height;
   await page.render({ canvasContext: ctx, viewport }).promise;
 }
+
+// 👀 Auto-preview the page user enters
+pageInput.addEventListener("input", () => {
+  const page = parseInt(pageInput.value);
+  if (!isNaN(page)) {
+    renderPage(page);
+  }
+});
 
 deleteBtn.addEventListener("click", async () => {
   const pageToDelete = parseInt(pageInput.value);
@@ -47,6 +62,8 @@ deleteBtn.addEventListener("click", async () => {
   currentPdfDoc.removePage(pageToDelete - 1);
   currentPdfBytes = await currentPdfDoc.save();
   alert(`Page ${pageToDelete} deleted.`);
+  pageInput.value = 1;
+  pageInput.max = currentPdfDoc.getPageCount();
   renderPage(1);
 });
 
