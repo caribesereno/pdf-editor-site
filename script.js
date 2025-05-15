@@ -1,5 +1,7 @@
 let currentPdfBytes = null;
 let currentPdfDoc = null;
+let currentPage = 1;
+let totalPages = 1;
 
 const input = document.getElementById("upload");
 const deleteBtn = document.getElementById("delete-btn");
@@ -9,6 +11,12 @@ const canvas = document.getElementById("pdf-canvas");
 const ctx = canvas.getContext("2d");
 const pageControls = document.getElementById("page-controls");
 
+const navButtons = document.getElementById("nav-buttons");
+const prevBtn = document.getElementById("prev-page");
+const nextBtn = document.getElementById("next-page");
+const pageNumDisplay = document.getElementById("page-num");
+const pageCountDisplay = document.getElementById("page-count");
+
 input.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (file && file.type === "application/pdf") {
@@ -16,9 +24,15 @@ input.addEventListener("change", async (e) => {
     currentPdfBytes = arrayBuffer;
     currentPdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
 
+    totalPages = currentPdfDoc.getPageCount();
+    currentPage = 1;
+
     pageControls.style.display = "block";
-    pageInput.max = currentPdfDoc.getPageCount();
-    renderPage(1); // Default preview: page 1
+    navButtons.style.display = "block";
+    pageInput.max = totalPages;
+    pageCountDisplay.textContent = totalPages;
+
+    renderPage(currentPage);
   }
 });
 
@@ -40,9 +54,23 @@ async function renderPage(pageNumber) {
   canvas.width = viewport.width;
   canvas.height = viewport.height;
   await page.render({ canvasContext: ctx, viewport }).promise;
+
+  currentPage = pageNumber;
+  pageNumDisplay.textContent = currentPage;
 }
 
-// 👀 Auto-preview the page user enters
+prevBtn.addEventListener("click", () => {
+  if (currentPage > 1) {
+    renderPage(currentPage - 1);
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  if (currentPage < totalPages) {
+    renderPage(currentPage + 1);
+  }
+});
+
 pageInput.addEventListener("input", () => {
   const page = parseInt(pageInput.value);
   if (!isNaN(page)) {
@@ -52,19 +80,24 @@ pageInput.addEventListener("input", () => {
 
 deleteBtn.addEventListener("click", async () => {
   const pageToDelete = parseInt(pageInput.value);
-  const totalPages = currentPdfDoc.getPageCount();
+  const total = currentPdfDoc.getPageCount();
 
-  if (pageToDelete < 1 || pageToDelete > totalPages) {
+  if (pageToDelete < 1 || pageToDelete > total) {
     alert("Invalid page number.");
     return;
   }
 
   currentPdfDoc.removePage(pageToDelete - 1);
   currentPdfBytes = await currentPdfDoc.save();
+
+  totalPages = currentPdfDoc.getPageCount();
+  pageInput.max = totalPages;
+  pageCountDisplay.textContent = totalPages;
+
   alert(`Page ${pageToDelete} deleted.`);
-  pageInput.value = 1;
-  pageInput.max = currentPdfDoc.getPageCount();
-  renderPage(1);
+
+  if (currentPage > totalPages) currentPage = totalPages;
+  renderPage(currentPage || 1);
 });
 
 downloadBtn.addEventListener("click", async () => {
