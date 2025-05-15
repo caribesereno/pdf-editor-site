@@ -6,6 +6,12 @@
   <title>Inclusive PDF Editor</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
     #drop-zone {
       border: 2px dashed #ccc;
       padding: 20px;
@@ -21,11 +27,16 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 5px;
-      padding: 5px 10px;
+      padding: 8px 10px;
       background: #fff;
       border: 1px solid #ddd;
       border-radius: 4px;
       cursor: grab;
+    }
+
+    .file-entry.active {
+      background-color: #e6f7ff;
+      border: 2px solid #2ecc71;
     }
 
     .file-actions {
@@ -36,6 +47,11 @@
     .file-actions button {
       padding: 2px 6px;
     }
+
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -43,6 +59,7 @@
 
   <input type="file" id="upload" accept="application/pdf" multiple />
   <div id="drop-zone">Drag and drop PDF files here</div>
+
   <button id="merge-btn">Merge PDFs</button>
 
   <div id="file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
@@ -65,6 +82,7 @@
 
   <canvas id="pdf-canvas"></canvas>
 
+  <!-- External libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
