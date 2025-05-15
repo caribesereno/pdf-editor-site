@@ -25,7 +25,6 @@ const nextBtn = document.getElementById("next-page");
 const pageNumDisplay = document.getElementById("page-num");
 const pageCountDisplay = document.getElementById("page-count");
 
-// -------- FILE HANDLING --------
 function addFiles(files) {
   for (const file of files) {
     if (!uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
@@ -55,7 +54,6 @@ dropZone.addEventListener("drop", (e) => {
   addFiles(Array.from(e.dataTransfer.files));
 });
 
-// -------- FILE LIST RENDER --------
 function renderFileList() {
   fileQueue.innerHTML = "";
 
@@ -63,9 +61,9 @@ function renderFileList() {
     const entry = document.createElement("div");
     entry.className = "file-entry";
     entry.setAttribute("data-index", index);
+
     if (file.name === currentFileName) {
-      entry.style.backgroundColor = "#e6f7ff";
-      entry.style.borderLeft = "4px solid #2ecc71";
+      entry.classList.add("active");
     }
 
     entry.innerHTML = `
@@ -88,7 +86,6 @@ function renderFileList() {
       loadAndPreviewFile(uploadedFiles[0]);
     }
   } else {
-    // Clear everything
     canvas.width = 0;
     canvas.height = 0;
     pageControls.style.display = "none";
@@ -131,7 +128,6 @@ function assignFileActionButtons() {
   });
 }
 
-// -------- SORTABLE DRAG SUPPORT --------
 Sortable.create(fileQueue, {
   animation: 150,
   onEnd: function () {
@@ -148,7 +144,6 @@ Sortable.create(fileQueue, {
   }
 });
 
-// -------- PDF VIEW --------
 async function loadAndPreviewFile(file) {
   const buffer = await file.arrayBuffer();
   currentPdfBytes = buffer;
@@ -178,7 +173,6 @@ async function renderPage(pageNum) {
   pageNumDisplay.textContent = pageNum;
 }
 
-// -------- NAVIGATION --------
 prevBtn.onclick = () => {
   if (currentPage > 1) renderPage(currentPage - 1);
 };
@@ -190,7 +184,6 @@ pageInput.oninput = () => {
   if (!isNaN(page)) renderPage(page);
 };
 
-// -------- DELETE PAGE --------
 deleteBtn.onclick = async () => {
   const pageToDelete = parseInt(pageInput.value);
   if (pageToDelete < 1 || pageToDelete > totalPages) return;
@@ -205,7 +198,6 @@ deleteBtn.onclick = async () => {
   renderPage(Math.min(currentPage, totalPages));
 };
 
-// -------- DOWNLOAD PDF --------
 downloadBtn.onclick = async () => {
   const bytes = await currentPdfDoc.save();
   const blob = new Blob([bytes], { type: "application/pdf" });
@@ -217,7 +209,6 @@ downloadBtn.onclick = async () => {
   URL.revokeObjectURL(url);
 };
 
-// -------- MERGE --------
 mergeBtn.onclick = async () => {
   if (uploadedFiles.length < 2) {
     alert("Please upload at least 2 PDFs.");
