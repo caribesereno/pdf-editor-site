@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple PDF Editor</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Simple PDF Editor</h1>
-  
-  <input type="file" id="pdfUpload" accept="application/pdf" />
-  <button id="addTextBtn">Add Text</button>
-  <button id="downloadBtn">Download Edited PDF</button>
+  <input type="file" id="upload" accept="application/pdf" />
+  <div id="page-controls" style="margin-top: 1rem; display:none;">
+    <label for="delete-page">Page to delete:</label>
+    <input type="number" id="delete-page" min="1" />
+    <button id="delete-btn">Delete Page</button>
+    <button id="download-btn">Download Edited PDF</button>
+  </div>
+  <canvas id="pdf-canvas"></canvas>
 
+  <!-- Load pdf-lib -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <!-- Load pdf.js (for rendering) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
