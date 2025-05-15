@@ -76,6 +76,20 @@ function renderFileList() {
   });
 
   assignFileActionButtons();
+
+  // Auto-preview first file or clear canvas
+  if (uploadedFiles.length > 0) {
+    if (!currentPdfBytes || !uploadedFiles.some(f => f.name === getCurrentFileName())) {
+      loadAndPreviewFile(uploadedFiles[0]);
+    }
+  } else {
+    canvas.width = 0;
+    canvas.height = 0;
+    pageControls.style.display = "none";
+    navButtons.style.display = "none";
+    currentPdfBytes = null;
+    currentPdfDoc = null;
+  }
 }
 
 function assignFileActionButtons() {
@@ -123,9 +137,14 @@ Sortable.create(fileQueue, {
       uploadedFiles = reordered;
     }
 
-    renderFileList();
+    renderFileList(); // auto-preview is handled inside renderFileList
   }
 });
+
+function getCurrentFileName() {
+  // Try to infer from rendered canvas — fallback if needed
+  return uploadedFiles.find(f => f.arrayBuffer?.toString() === currentPdfBytes?.toString())?.name || "";
+}
 
 // -------- PDF VIEW --------
 async function loadAndPreviewFile(file) {
