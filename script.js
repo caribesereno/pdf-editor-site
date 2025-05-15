@@ -4,6 +4,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 let uploadedFiles = [];
 let currentPdfBytes = null;
 let currentPdfDoc = null;
+let currentFileName = null;
 let currentPage = 1;
 let totalPages = 1;
 
@@ -62,6 +63,11 @@ function renderFileList() {
     const entry = document.createElement("div");
     entry.className = "file-entry";
     entry.setAttribute("data-index", index);
+    if (file.name === currentFileName) {
+      entry.style.backgroundColor = "#e6f7ff";
+      entry.style.borderLeft = "4px solid #2ecc71";
+    }
+
     entry.innerHTML = `
       <span style="flex: 1; cursor: pointer;">${file.name}</span>
       <div class="file-actions">
@@ -77,18 +83,19 @@ function renderFileList() {
 
   assignFileActionButtons();
 
-  // Auto-preview first file or clear canvas
   if (uploadedFiles.length > 0) {
-    if (!currentPdfBytes || !uploadedFiles.some(f => f.name === getCurrentFileName())) {
+    if (!currentPdfBytes || !uploadedFiles.some(f => f.name === currentFileName)) {
       loadAndPreviewFile(uploadedFiles[0]);
     }
   } else {
+    // Clear everything
     canvas.width = 0;
     canvas.height = 0;
     pageControls.style.display = "none";
     navButtons.style.display = "none";
     currentPdfBytes = null;
     currentPdfDoc = null;
+    currentFileName = null;
   }
 }
 
@@ -137,20 +144,16 @@ Sortable.create(fileQueue, {
       uploadedFiles = reordered;
     }
 
-    renderFileList(); // auto-preview is handled inside renderFileList
+    renderFileList();
   }
 });
-
-function getCurrentFileName() {
-  // Try to infer from rendered canvas — fallback if needed
-  return uploadedFiles.find(f => f.arrayBuffer?.toString() === currentPdfBytes?.toString())?.name || "";
-}
 
 // -------- PDF VIEW --------
 async function loadAndPreviewFile(file) {
   const buffer = await file.arrayBuffer();
   currentPdfBytes = buffer;
   currentPdfDoc = await PDFLib.PDFDocument.load(buffer);
+  currentFileName = file.name;
 
   totalPages = currentPdfDoc.getPageCount();
   currentPage = 1;
@@ -232,6 +235,7 @@ mergeBtn.onclick = async () => {
 
   currentPdfBytes = await mergedPdf.save();
   currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
+  currentFileName = "merged.pdf";
 
   totalPages = currentPdfDoc.getPageCount();
   currentPage = 1;
