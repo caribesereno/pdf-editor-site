@@ -1,8 +1,8 @@
-// Set up PDF.js worker
+// Set up PDF.js worker for rendering
 window.pdfjsLib = window.pdfjsLib || window["pdfjs-dist/build/pdf"];
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
 
-// State variables
+// State
 let currentPdfBytes = null;
 let currentPdfDoc = null;
 let currentPage = 1;
@@ -26,12 +26,38 @@ const nextBtn = document.getElementById("next-page");
 const pageNumDisplay = document.getElementById("page-num");
 const pageCountDisplay = document.getElementById("page-count");
 
-// Handle file selection (but do NOT merge automatically)
-input.addEventListener("change", (e) => {
-  uploadedFiles = Array.from(e.target.files);
+// 🔁 Handle file upload
+input.addEventListener("change", async (e) => {
+  const newFiles = Array.from(e.target.files);
+
+  // Add files to list without duplicates
+  for (const file of newFiles) {
+    if (!uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+      uploadedFiles.push(file);
+    }
+  }
+
+  if (uploadedFiles.length === 1) {
+    // Auto-preview first file
+    const arrayBuffer = await uploadedFiles[0].arrayBuffer();
+    currentPdfBytes = arrayBuffer;
+    currentPdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+    totalPages = currentPdfDoc.getPageCount();
+    currentPage = 1;
+
+    pageControls.style.display = "block";
+    navButtons.style.display = "block";
+    pageInput.max = totalPages;
+    pageCountDisplay.textContent = totalPages;
+
+    renderPage(currentPage);
+  } else {
+    alert("Multiple PDFs uploaded. Click 'Merge PDFs' to combine them.");
+  }
 });
 
-// Render a specific page
+// 🔎 Page rendering
 async function renderPage(pageNumber) {
   if (!currentPdfBytes || !pageNumber) {
     console.error("No PDF data or invalid page number.");
@@ -61,7 +87,7 @@ async function renderPage(pageNumber) {
   }
 }
 
-// Navigation buttons
+// ⬅️➡️ Navigation
 prevBtn.addEventListener("click", () => {
   if (currentPage > 1) renderPage(currentPage - 1);
 });
@@ -70,13 +96,13 @@ nextBtn.addEventListener("click", () => {
   if (currentPage < totalPages) renderPage(currentPage + 1);
 });
 
-// Direct page preview from input
+// 🔢 Manual page input
 pageInput.addEventListener("input", () => {
   const page = parseInt(pageInput.value);
   if (!isNaN(page)) renderPage(page);
 });
 
-// Delete selected page
+// 🗑️ Delete a page
 deleteBtn.addEventListener("click", async () => {
   const pageToDelete = parseInt(pageInput.value);
   const total = currentPdfDoc.getPageCount();
@@ -100,7 +126,7 @@ deleteBtn.addEventListener("click", async () => {
   renderPage(currentPage || 1);
 });
 
-// Download PDF
+// 💾 Download
 downloadBtn.addEventListener("click", async () => {
   const editedPdfBytes = await currentPdfDoc.save();
   const blob = new Blob([editedPdfBytes], { type: "application/pdf" });
@@ -113,10 +139,10 @@ downloadBtn.addEventListener("click", async () => {
   URL.revokeObjectURL(url);
 });
 
-// Merge PDFs
+// ➕ Merge PDFs
 mergeBtn.addEventListener("click", async () => {
-  if (uploadedFiles.length === 0) {
-    alert("Please select at least one PDF file to merge.");
+  if (uploadedFiles.length < 2) {
+    alert("Please upload at least 2 PDFs to merge.");
     return;
   }
 
