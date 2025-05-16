@@ -70,7 +70,9 @@ deleteBtn.onclick = async () => {
   totalPages = currentPdfDoc.getPageCount();
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
-  await renderPage(Math.min(currentPage, totalPages));
+
+  currentPage = Math.min(currentPage, totalPages);
+  await renderPage(currentPage);
   await renderThumbnails(currentPdfBytes);
 };
 
@@ -132,7 +134,11 @@ async function renderThumbnails(pdfBytes) {
     wrapper.appendChild(thumbCanvas);
     wrapper.title = `Page ${i + 1}`;
 
-    wrapper.onclick = () => renderPage(i + 1);
+    wrapper.onclick = () => {
+      currentPage = i + 1;
+      renderPage(currentPage);
+    };
+
     thumbnailStrip.appendChild(wrapper);
   }
 
@@ -154,12 +160,13 @@ async function renderThumbnails(pdfBytes) {
       currentPdfBytes = await newPdf.save();
       currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
       totalPages = currentPdfDoc.getPageCount();
-      currentPage = 1;
 
+      // Always reset preview to new first page
+      currentPage = 1;
       pageInput.max = totalPages;
       pageCountDisplay.textContent = totalPages;
       await renderPage(currentPage);
-      await renderThumbnails(currentPdfBytes); // re-render thumbnails in new order
+      await renderThumbnails(currentPdfBytes);
     }
   });
 }
@@ -167,19 +174,22 @@ async function renderThumbnails(pdfBytes) {
 // Navigation buttons
 prevBtn.onclick = () => {
   if (currentPage > 1) {
-    renderPage(currentPage - 1);
+    currentPage -= 1;
+    renderPage(currentPage);
   }
 };
 
 nextBtn.onclick = () => {
   if (currentPage < totalPages) {
-    renderPage(currentPage + 1);
+    currentPage += 1;
+    renderPage(currentPage);
   }
 };
 
 pageInput.oninput = () => {
   const page = parseInt(pageInput.value);
-  if (!isNaN(page)) {
-    renderPage(page);
+  if (!isNaN(page) && page >= 1 && page <= totalPages) {
+    currentPage = page;
+    renderPage(currentPage);
   }
 };
