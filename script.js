@@ -1,5 +1,3 @@
-
-// script.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
 
 let uploadedFiles = [];
@@ -10,7 +8,6 @@ let currentPage = 1;
 let totalPages = 1;
 
 const input = document.getElementById("upload");
-const fileQueue = document.getElementById("file-queue");
 const canvas = document.getElementById("pdf-canvas");
 const ctx = canvas.getContext("2d");
 const pageInput = document.getElementById("delete-page");
@@ -23,57 +20,12 @@ const downloadBtn = document.getElementById("download-btn");
 const mergeBtn = document.getElementById("merge-btn");
 const thumbnailStrip = document.getElementById("thumbnail-strip");
 
-// Handle uploads
-input.addEventListener("change", (e) => {
-  const files = Array.from(e.target.files);
-  for (const file of files) {
-    if (!uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
-      uploadedFiles.push(file);
-    }
+input.addEventListener("change", async (e) => {
+  uploadedFiles = Array.from(e.target.files);
+  if (uploadedFiles.length > 0) {
+    await loadAndPreviewFile(uploadedFiles[0]);
   }
-  renderFileList();
-  if (uploadedFiles.length === 1) loadAndPreviewFile(uploadedFiles[0]);
 });
-
-function renderFileList() {
-  fileQueue.innerHTML = "";
-  uploadedFiles.forEach((file, index) => {
-    const entry = document.createElement("div");
-    entry.className = "file-entry";
-    if (file.name === currentFileName) {
-      entry.classList.add("active");
-    }
-
-    entry.innerHTML = `
-      <span style="flex:1;cursor:pointer;">${file.name}</span>
-      <div class="file-actions">
-        <button class="up">🔼</button>
-        <button class="down">🔽</button>
-        <button class="remove">❌</button>
-      </div>
-    `;
-
-    entry.querySelector("span").onclick = () => loadAndPreviewFile(file);
-    entry.querySelector(".up").onclick = () => {
-      if (index > 0) {
-        [uploadedFiles[index], uploadedFiles[index - 1]] = [uploadedFiles[index - 1], uploadedFiles[index]];
-        renderFileList();
-      }
-    };
-    entry.querySelector(".down").onclick = () => {
-      if (index < uploadedFiles.length - 1) {
-        [uploadedFiles[index], uploadedFiles[index + 1]] = [uploadedFiles[index + 1], uploadedFiles[index]];
-        renderFileList();
-      }
-    };
-    entry.querySelector(".remove").onclick = () => {
-      uploadedFiles.splice(index, 1);
-      renderFileList();
-    };
-
-    fileQueue.appendChild(entry);
-  });
-}
 
 async function loadAndPreviewFile(file) {
   const buffer = await file.arrayBuffer();
@@ -90,7 +42,6 @@ async function loadAndPreviewFile(file) {
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
 
-  renderFileList();
   await renderPage(currentPage);
   await renderThumbnails(currentPdfBytes);
 }
@@ -119,9 +70,7 @@ deleteBtn.onclick = async () => {
   totalPages = currentPdfDoc.getPageCount();
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
-
-  currentPage = Math.min(currentPage, totalPages);
-  await renderPage(currentPage);
+  await renderPage(Math.min(currentPage, totalPages));
   await renderThumbnails(currentPdfBytes);
 };
 
@@ -152,8 +101,8 @@ mergeBtn.onclick = async () => {
 
   currentPdfBytes = await mergedPdf.save();
   currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
-  currentPage = 1;
   totalPages = currentPdfDoc.getPageCount();
+  currentPage = 1;
 
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
@@ -161,8 +110,10 @@ mergeBtn.onclick = async () => {
   await renderThumbnails(currentPdfBytes);
 };
 
+// Thumbnail rendering + reordering
 async function renderThumbnails(pdfBytes) {
   thumbnailStrip.innerHTML = "";
+
   const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
 
   for (let i = 0; i < pdf.numPages; i++) {
@@ -182,11 +133,7 @@ async function renderThumbnails(pdfBytes) {
     wrapper.appendChild(thumbCanvas);
     wrapper.title = `Page ${i + 1}`;
 
-    wrapper.onclick = () => {
-      currentPage = i + 1;
-      renderPage(currentPage);
-    };
-
+    wrapper.onclick = () => renderPage(i + 1);
     thumbnailStrip.appendChild(wrapper);
   }
 
@@ -208,35 +155,22 @@ async function renderThumbnails(pdfBytes) {
       currentPdfBytes = await newPdf.save();
       currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
       totalPages = currentPdfDoc.getPageCount();
-      currentPage = 1;
-
       pageInput.max = totalPages;
       pageCountDisplay.textContent = totalPages;
+
       await renderPage(currentPage);
-      await renderThumbnails(currentPdfBytes);
+      await renderThumbnails(currentPdfBytes); // refresh thumbnails with new order
     }
   });
 }
 
-// Navigation
 prevBtn.onclick = () => {
-  if (currentPage > 1) {
-    currentPage--;
-    renderPage(currentPage);
-  }
+  if (currentPage > 1) renderPage(currentPage - 1);
 };
-
 nextBtn.onclick = () => {
-  if (currentPage < totalPages) {
-    currentPage++;
-    renderPage(currentPage);
-  }
+  if (currentPage < totalPages) renderPage(currentPage + 1);
 };
-
 pageInput.oninput = () => {
   const page = parseInt(pageInput.value);
-  if (!isNaN(page) && page >= 1 && page <= totalPages) {
-    currentPage = page;
-    renderPage(currentPage);
-  }
+  if (!isNaN(page)) renderPage(page);
 };
