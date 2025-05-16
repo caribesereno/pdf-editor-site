@@ -70,9 +70,7 @@ deleteBtn.onclick = async () => {
   totalPages = currentPdfDoc.getPageCount();
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
-
-  currentPage = Math.min(currentPage, totalPages);
-  await renderPage(currentPage);
+  await renderPage(Math.min(currentPage, totalPages));
   await renderThumbnails(currentPdfBytes);
 };
 
@@ -112,6 +110,7 @@ mergeBtn.onclick = async () => {
   await renderThumbnails(currentPdfBytes);
 };
 
+// Thumbnail rendering + reordering
 async function renderThumbnails(pdfBytes) {
   thumbnailStrip.innerHTML = "";
 
@@ -134,11 +133,7 @@ async function renderThumbnails(pdfBytes) {
     wrapper.appendChild(thumbCanvas);
     wrapper.title = `Page ${i + 1}`;
 
-    wrapper.onclick = () => {
-      currentPage = i + 1;
-      renderPage(currentPage);
-    };
-
+    wrapper.onclick = () => renderPage(i + 1);
     thumbnailStrip.appendChild(wrapper);
   }
 
@@ -160,36 +155,22 @@ async function renderThumbnails(pdfBytes) {
       currentPdfBytes = await newPdf.save();
       currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
       totalPages = currentPdfDoc.getPageCount();
-
-      // Always reset preview to new first page
-      currentPage = 1;
       pageInput.max = totalPages;
       pageCountDisplay.textContent = totalPages;
+
       await renderPage(currentPage);
-      await renderThumbnails(currentPdfBytes);
+      await renderThumbnails(currentPdfBytes); // refresh thumbnails with new order
     }
   });
 }
 
-// Navigation buttons
 prevBtn.onclick = () => {
-  if (currentPage > 1) {
-    currentPage -= 1;
-    renderPage(currentPage);
-  }
+  if (currentPage > 1) renderPage(currentPage - 1);
 };
-
 nextBtn.onclick = () => {
-  if (currentPage < totalPages) {
-    currentPage += 1;
-    renderPage(currentPage);
-  }
+  if (currentPage < totalPages) renderPage(currentPage + 1);
 };
-
 pageInput.oninput = () => {
   const page = parseInt(pageInput.value);
-  if (!isNaN(page) && page >= 1 && page <= totalPages) {
-    currentPage = page;
-    renderPage(currentPage);
-  }
+  if (!isNaN(page)) renderPage(page);
 };
