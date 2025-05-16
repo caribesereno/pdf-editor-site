@@ -3,57 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF Editor + Page Reorder</title>
+  <title>PDF Editor with Page Reordering</title>
   <style>
     body {
       font-family: sans-serif;
+      background-color: #f5f5f5;
       padding: 20px;
-      background: #f5f5f5;
-    }
-
-    #drop-zone {
-      border: 2px dashed #ccc;
-      padding: 20px;
-      margin-bottom: 15px;
-      text-align: center;
-      color: #666;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-    }
-
-    #file-queue {
-      margin-top: 10px;
-    }
-
-    .file-entry {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      padding: 8px;
-      margin-bottom: 5px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .file-entry.active {
-      background-color: #e6f7ff;
-      border: 2px solid #2ecc71;
-    }
-
-    .file-actions button {
-      margin-left: 5px;
     }
 
     #thumbnail-strip {
       display: flex;
-      overflow-x: auto;
+      flex-wrap: wrap;
       gap: 10px;
-      padding: 10px;
+      margin-top: 15px;
       background: #fff;
+      padding: 10px;
       border: 1px solid #ccc;
-      margin-top: 20px;
       border-radius: 5px;
+      overflow-x: auto;
     }
 
     .thumb {
@@ -67,29 +34,38 @@
       width: 100px;
       height: auto;
     }
+
+    canvas#pdf-canvas {
+      display: block;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+
+    #page-controls,
+    #nav-buttons {
+      margin-top: 15px;
+    }
+
+    button {
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
-  <h1>PDF Editor with Page Reordering</h1>
+
+  <h1>PDF Editor with Drag-and-Drop Page Reordering</h1>
 
   <input type="file" id="upload" accept="application/pdf" multiple />
-  <div id="drop-zone">Drag and drop PDF files here</div>
-
   <button id="merge-btn">Merge PDFs</button>
 
-  <div id="file-list">
-    <strong>Files queued for merging:</strong>
-    <div id="file-queue"></div>
-  </div>
-
-  <div id="page-controls" style="margin-top: 1rem; display: none;">
+  <div id="page-controls" style="display: none;">
     <label for="delete-page">Page to delete:</label>
     <input type="number" id="delete-page" min="1" />
     <button id="delete-btn">Delete Page</button>
     <button id="download-btn">Download Edited PDF</button>
   </div>
 
-  <div id="nav-buttons" style="margin-top: 1rem; display: none;">
+  <div id="nav-buttons" style="display: none;">
     <button id="prev-page">⬅️ Previous</button>
     <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
     <button id="next-page">Next ➡️</button>
@@ -97,9 +73,9 @@
 
   <canvas id="pdf-canvas"></canvas>
 
-  <div id="thumbnail-strip" style="display:none;"></div>
+  <div id="thumbnail-strip" style="display: none;"></div>
 
-  <!-- Libraries -->
+  <!-- External libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
