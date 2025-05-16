@@ -70,19 +70,24 @@ function renderFileList() {
       if (uploadedFiles.length > 0) {
         loadAndPreviewFile(uploadedFiles[0]);
       } else {
-        canvas.width = 0;
-        canvas.height = 0;
-        currentPdfBytes = null;
-        currentPdfDoc = null;
-        currentFileName = null;
-        pageControls.style.display = "none";
-        navButtons.style.display = "none";
-        thumbnailStrip.style.display = "none";
+        resetView();
       }
     };
 
     fileQueue.appendChild(entry);
   });
+}
+
+function resetView() {
+  canvas.width = 0;
+  canvas.height = 0;
+  currentPdfBytes = null;
+  currentPdfDoc = null;
+  currentFileName = null;
+  pageControls.style.display = "none";
+  navButtons.style.display = "none";
+  thumbnailStrip.style.display = "none";
+  thumbnailStrip.innerHTML = "";
 }
 
 async function loadAndPreviewFile(file) {
@@ -163,9 +168,11 @@ mergeBtn.onclick = async () => {
   currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
   totalPages = currentPdfDoc.getPageCount();
   currentPage = 1;
+  currentFileName = "merged.pdf";
 
   pageInput.max = totalPages;
   pageCountDisplay.textContent = totalPages;
+  renderFileList();
   await renderPage(currentPage);
   await renderThumbnails(currentPdfBytes);
 };
@@ -192,7 +199,11 @@ async function renderThumbnails(pdfBytes) {
     wrapper.appendChild(thumbCanvas);
     wrapper.title = `Page ${i + 1}`;
 
-    wrapper.onclick = () => renderPage(i + 1);
+    wrapper.onclick = () => {
+      currentPage = i + 1;
+      renderPage(currentPage);
+    };
+
     thumbnailStrip.appendChild(wrapper);
   }
 
@@ -204,7 +215,7 @@ async function renderThumbnails(pdfBytes) {
       );
 
       const newPdf = await PDFLib.PDFDocument.create();
-      const oldPdf = await PDFLib.PDFDocument.load(pdfBytes);
+      const oldPdf = await PDFLib.PDFDocument.load(currentPdfBytes);
 
       for (let index of newOrder) {
         const [page] = await newPdf.copyPages(oldPdf, [index]);
@@ -215,9 +226,9 @@ async function renderThumbnails(pdfBytes) {
       currentPdfDoc = await PDFLib.PDFDocument.load(currentPdfBytes);
       totalPages = currentPdfDoc.getPageCount();
       currentPage = 1;
-
       pageInput.max = totalPages;
       pageCountDisplay.textContent = totalPages;
+
       await renderPage(currentPage);
       await renderThumbnails(currentPdfBytes);
     }
