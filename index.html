@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inclusive PDF Editor</title>
+  <title>PDF Editor + Page Reorder</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
-      background-color: #f4f4f4;
+      background: #f5f5f5;
     }
 
     #drop-zone {
@@ -21,16 +21,19 @@
       background-color: #f9f9f9;
     }
 
+    #file-queue {
+      margin-top: 10px;
+    }
+
     .file-entry {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 5px;
-      padding: 8px 10px;
+      align-items: center;
       background: #fff;
+      padding: 8px;
+      margin-bottom: 5px;
       border: 1px solid #ddd;
-      border-radius: 4px;
-      cursor: grab;
+      border-radius: 5px;
     }
 
     .file-entry.active {
@@ -38,32 +41,45 @@
       border: 2px solid #2ecc71;
     }
 
-    .file-actions {
-      display: flex;
-      gap: 4px;
-    }
-
     .file-actions button {
-      padding: 2px 6px;
+      margin-left: 5px;
     }
 
-    canvas {
-      margin-top: 20px;
+    #thumbnail-strip {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px;
+      background: #fff;
       border: 1px solid #ccc;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+
+    .thumb {
+      border: 1px solid #999;
+      border-radius: 4px;
+      cursor: grab;
+    }
+
+    .thumb canvas {
+      display: block;
+      width: 100px;
+      height: auto;
     }
   </style>
 </head>
 <body>
-  <h1>Inclusive PDF Editor</h1>
+  <h1>PDF Editor with Page Reordering</h1>
 
   <input type="file" id="upload" accept="application/pdf" multiple />
   <div id="drop-zone">Drag and drop PDF files here</div>
 
   <button id="merge-btn">Merge PDFs</button>
 
-  <div id="file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+  <div id="file-list">
     <strong>Files queued for merging:</strong>
-    <div id="file-queue" aria-label="List of uploaded files"></div>
+    <div id="file-queue"></div>
   </div>
 
   <div id="page-controls" style="margin-top: 1rem; display: none;">
@@ -81,6 +97,9 @@
 
   <canvas id="pdf-canvas"></canvas>
 
+  <div id="thumbnail-strip" style="display:none;"></div>
+
+  <!-- Libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
