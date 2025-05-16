@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #file-queue {
+      margin: 15px 0;
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .file-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px;
+      border-bottom: 1px solid #eee;
+    }
+    .file-entry:last-child {
+      border-bottom: none;
+    }
+    .file-entry.active {
+      background-color: #e0f7fa;
+      border-left: 4px solid #00796b;
+    }
+    .file-actions button {
+      margin-left: 4px;
+    }
+    canvas#pdf-canvas {
+      border: 1px solid #ccc;
+      margin-top: 15px;
+      max-width: 100%;
+    }
+    #thumbnail-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    .thumb canvas {
+      width: 100px;
+      cursor: grab;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+    }
+    button {
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>PDF Editor with File Queue & Page Reordering</h1>
+
+  <input type="file" id="upload" accept="application/pdf" multiple />
+  <button id="merge-btn">Merge PDFs</button>
+
+  <h3>Files queued for merging:</h3>
+  <div id="file-queue"></div>
+
+  <div id="page-controls" style="display:none;">
+    <label for="delete-page">Page to delete:</label>
+    <input type="number" id="delete-page" min="1" />
+    <button id="delete-btn">Delete Page</button>
+    <button id="download-btn">Download Edited PDF</button>
+  </div>
+
+  <div id="nav-buttons" style="display:none;">
+    <button id="prev-page">⬅️ Previous</button>
+    <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
+    <button id="next-page">Next ➡️</button>
+  </div>
+
+  <canvas id="pdf-canvas"></canvas>
+  <div id="thumbnail-strip" style="display:none;"></div>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="final-script-with-queue-preview-merge-drag.js"></script>
+</body>
+</html>
