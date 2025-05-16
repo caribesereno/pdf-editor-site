@@ -150,6 +150,10 @@ async function loadAndPreviewFile(file) {
   currentPdfDoc = await PDFLib.PDFDocument.load(buffer);
   currentFileName = file.name;
 
+  // Move file to top of list
+  uploadedFiles = [file, ...uploadedFiles.filter(f => f.name !== file.name)];
+  renderFileList();
+
   totalPages = currentPdfDoc.getPageCount();
   currentPage = 1;
 
