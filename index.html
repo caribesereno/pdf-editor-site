@@ -4,70 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PDF Editor</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-    }
 
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    #file-queue {
-      margin: 15px 0;
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    .file-entry {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .file-entry:last-child {
-      border-bottom: none;
-    }
-
-    .file-entry.active {
-      background-color: #e0f7fa;
-      border-left: 4px solid #00796b;
-    }
-
-    .file-actions button {
-      margin-left: 4px;
-    }
-
-    canvas#pdf-canvas {
-      border: 1px solid #ccc;
-      margin-top: 15px;
-      max-width: 100%;
-    }
-
-    #thumbnail-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 15px;
-    }
-
-    .thumb canvas {
-      width: 100px;
-      cursor: grab;
-      border: 1px solid #aaa;
-      border-radius: 4px;
-    }
-
-    button {
-      margin-right: 6px;
-    }
-  </style>
+  <!-- ✅ External stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -95,7 +34,7 @@
   <canvas id="pdf-canvas"></canvas>
   <div id="thumbnail-strip" style="display: none;"></div>
 
-  <!-- Libraries -->
+  <!-- ✅ Libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
