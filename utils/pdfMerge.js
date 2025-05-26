@@ -1,18 +1,16 @@
 import { PDFDocument } from '../lib/pdf-lib.min.js';
 
-export async function mergePDFs(files) {
+export async function mergePDFs(fileList) {
   const mergedPdf = await PDFDocument.create();
 
-  for (const file of files) {
+  for (const file of fileList) {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await PDFDocument.load(arrayBuffer);
     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
 
-    for (const page of copiedPages) {
-      mergedPdf.addPage(page);
-    }
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
   }
 
-  const mergedPdfBytes = await mergedPdf.save();
-  return new Blob([mergedPdfBytes], { type: 'application/pdf' });
+  const pdfBytes = await mergedPdf.save();
+  return new Blob([pdfBytes], { type: 'application/pdf' });
 }
