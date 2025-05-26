@@ -1,8 +1,19 @@
 const uploadInput = document.getElementById('upload');
 const dropZone = document.getElementById('drop-zone');
 const fileList = document.getElementById('file-list');
+const canvas = document.getElementById('pdf-canvas');
+const ctx = canvas.getContext('2d');
+
+const previewContainer = document.getElementById('preview-container');
+const pageNumSpan = document.getElementById('page-num');
+const pageCountSpan = document.getElementById('page-count');
+const prevPageBtn = document.getElementById('prev-page');
+const nextPageBtn = document.getElementById('next-page');
 
 let pdfFiles = [];
+let currentPreview = null;
+let currentPage = 1;
+let pdfDoc = null;
 
 uploadInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -42,6 +53,7 @@ function renderFileList() {
     const fileName = document.createElement('span');
     fileName.className = 'file-name';
     fileName.textContent = file.name;
+    fileName.onclick = () => previewPDF(file);
 
     const actions = document.createElement('div');
     actions.className = 'action-buttons';
@@ -73,12 +85,56 @@ function moveFile(currentIndex, direction) {
   }
 }
 
-// Enable drag-and-drop reordering with Sortable.js
 Sortable.create(fileList, {
   animation: 150,
   onEnd: (evt) => {
     const movedItem = pdfFiles.splice(evt.oldIndex, 1)[0];
     pdfFiles.splice(evt.newIndex, 0, movedItem);
     renderFileList();
+  }
+});
+
+// PDF Preview Logic
+async function previewPDF(file) {
+  const fileReader = new FileReader();
+  fileReader.onload = async function () {
+    const typedarray = new Uint8Array(this.result);
+
+    pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
+    currentPage = 1;
+    previewContainer.style.display = 'block';
+    pageCountSpan.textContent = pdfDoc.numPages;
+    renderPage(currentPage);
+  };
+  fileReader.readAsArrayBuffer(file);
+}
+
+async function renderPage(pageNum) {
+  const page = await pdfDoc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1.5 });
+
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+
+  const renderContext = {
+    canvasContext: ctx,
+    viewport: viewport
+  };
+  await page.render(renderContext).promise;
+
+  pageNumSpan.textContent = pageNum;
+}
+
+prevPageBtn.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderPage(currentPage);
+  }
+});
+
+nextPageBtn.addEventListener('click', () => {
+  if (currentPage < pdfDoc.numPages) {
+    currentPage++;
+    renderPage(currentPage);
   }
 });
