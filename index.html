@@ -8,10 +8,11 @@
 </head>
 <body>
   <h1>PDF Toolkit</h1>
-  
+
   <div class="uploader">
-    <input type="file" id="pdfUpload" multiple accept="application/pdf" />
+    <input type="file" id="pdfUpload" accept="application/pdf" />
     <button onclick="handleMerge()">Merge PDFs</button>
+    <button onclick="clearFiles()">Clear All</button>
     <button onclick="handleReorder()">Reorder Pages</button>
     <button onclick="handleDelete()">Delete Pages</button>
     <button onclick="handleSplit()">Split PDF</button>
@@ -20,7 +21,9 @@
     <button onclick="handleSign()">Fill & Sign</button>
   </div>
 
-  <div id="previewContainer"></div>
+  <div id="previewContainer">
+    <p>No files uploaded yet.</p>
+  </div>
 
   <script src="lib/pdf-lib.min.js"></script>
   <script src="script.js" type="module"></script>
