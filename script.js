@@ -31,13 +31,54 @@ dropZone.addEventListener('drop', (e) => {
 
 function addFile(file) {
   pdfFiles.push(file);
-
-  const li = document.createElement('li');
-  li.textContent = file.name;
-  fileList.appendChild(li);
+  renderFileList();
 }
 
-// Make file list draggable
+function renderFileList() {
+  fileList.innerHTML = '';
+  pdfFiles.forEach((file, index) => {
+    const li = document.createElement('li');
+
+    const fileName = document.createElement('span');
+    fileName.className = 'file-name';
+    fileName.textContent = file.name;
+
+    const actions = document.createElement('div');
+    actions.className = 'action-buttons';
+
+    const upBtn = document.createElement('button');
+    upBtn.textContent = '↑';
+    upBtn.onclick = () => moveFile(index, -1);
+
+    const downBtn = document.createElement('button');
+    downBtn.textContent = '↓';
+    downBtn.onclick = () => moveFile(index, 1);
+
+    actions.appendChild(upBtn);
+    actions.appendChild(downBtn);
+
+    li.appendChild(fileName);
+    li.appendChild(actions);
+    fileList.appendChild(li);
+  });
+}
+
+function moveFile(currentIndex, direction) {
+  const newIndex = currentIndex + direction;
+  if (newIndex >= 0 && newIndex < pdfFiles.length) {
+    const temp = pdfFiles[currentIndex];
+    pdfFiles[currentIndex] = pdfFiles[newIndex];
+    pdfFiles[newIndex] = temp;
+    renderFileList();
+  }
+}
+
+// Enable drag-and-drop reordering with Sortable.js
 Sortable.create(fileList, {
-  animation: 150
+  animation: 150,
+  onEnd: (evt) => {
+    const movedItem = pdfFiles.splice(evt.oldIndex, 1)[0];
+    pdfFiles.splice(evt.newIndex, 0, movedItem);
+    renderFileList();
+  }
 });
