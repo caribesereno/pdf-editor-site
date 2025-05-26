@@ -2,27 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDF Editor with Thumbnails</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inclusive PDF Editor</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    #drop-zone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #666;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .file-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: grab;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .file-actions button {
+      padding: 2px 6px;
+    }
+  </style>
 </head>
 <body>
-  <h1>PDF Editor</h1>
+  <h1>Inclusive PDF Editor</h1>
 
-  <div id="dropzone" class="uploader">
-    <p>📂 Drag & drop PDFs here or <label for="pdfUpload" class="file-label">browse</label></p>
-    <input type="file" id="pdfUpload" accept="application/pdf" hidden />
+  <input type="file" id="upload" accept="application/pdf" multiple />
+  <div id="drop-zone">Drag and drop PDF files here</div>
+  <button id="merge-btn">Merge PDFs</button>
+
+  <div id="file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    <strong>Files queued for merging:</strong>
+    <div id="file-queue" aria-label="List of uploaded files"></div>
   </div>
 
-  <div id="thumbnailContainer" class="thumbnail-grid"></div>
-
-  <div class="actions">
-    <button onclick="exportReordered()">Export Reordered PDF</button>
-    <button onclick="deleteSelectedPages()">Delete Selected Pages</button>
+  <div id="page-controls" style="margin-top: 1rem; display: none;">
+    <label for="delete-page">Page to delete:</label>
+    <input type="number" id="delete-page" min="1" />
+    <button id="delete-btn">Delete Page</button>
+    <button id="download-btn">Download Edited PDF</button>
   </div>
 
-  <script src="lib/pdf-lib.min.js"></script>
-  <script src="lib/pdf.js"></script>
-  <script src="script.js" type="module"></script>
+  <div id="nav-buttons" style="margin-top: 1rem; display: none;">
+    <button id="prev-page">⬅️ Previous</button>
+    <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
+    <button id="next-page">Next ➡️</button>
+  </div>
+
+  <canvas id="pdf-canvas"></canvas>
+
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
