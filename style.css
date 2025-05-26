@@ -4,7 +4,7 @@ body {
   background: #f4f4f4;
 }
 
-h1, h2 {
+h1, h2, h3, h4 {
   margin-bottom: 10px;
 }
 
@@ -74,4 +74,25 @@ canvas {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+#thumbnails-container {
+  margin-top: 20px;
+}
+
+#thumbnails {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.thumbnail-canvas {
+  border: 2px solid transparent;
+  cursor: pointer;
+  height: 100px;
+}
+
+.thumbnail-canvas.active {
+  border-color: #007bff;
 }
