@@ -15,6 +15,16 @@
   <h2>Files queued for merging</h2>
   <ul id="file-list" aria-label="List of uploaded PDFs"></ul>
 
+  <div id="preview-container" style="display: none;">
+    <h3>PDF Preview</h3>
+    <canvas id="pdf-canvas"></canvas>
+    <div id="nav-buttons">
+      <button id="prev-page">⬅️ Previous</button>
+      <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
+      <button id="next-page">Next ➡️</button>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
