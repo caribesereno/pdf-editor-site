@@ -9,12 +9,12 @@ const pageNumSpan = document.getElementById('page-num');
 const pageCountSpan = document.getElementById('page-count');
 const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
-
 const thumbnailsContainer = document.getElementById('thumbnails');
 
 let pdfFiles = [];
 let pdfDoc = null;
 let currentPage = 1;
+let pageOrder = []; // Custom page order
 
 uploadInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -99,9 +99,9 @@ async function previewPDF(file) {
   const fileReader = new FileReader();
   fileReader.onload = async function () {
     const typedarray = new Uint8Array(this.result);
-
     pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
     currentPage = 1;
+    pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
     previewContainer.style.display = 'block';
     pageCountSpan.textContent = pdfDoc.numPages;
     renderPage(currentPage);
@@ -111,24 +111,19 @@ async function previewPDF(file) {
 }
 
 async function renderPage(pageNum) {
-  const page = await pdfDoc.getPage(pageNum);
+  const logicalPage = pageOrder[pageNum - 1];
+  const page = await pdfDoc.getPage(logicalPage);
   const viewport = page.getViewport({ scale: 1.5 });
 
   canvas.height = viewport.height;
   canvas.width = viewport.width;
 
-  const renderContext = {
-    canvasContext: ctx,
-    viewport: viewport
-  };
-  await page.render(renderContext).promise;
+  await page.render({ canvasContext: ctx, viewport }).promise;
 
   pageNumSpan.textContent = pageNum;
 
-  // Highlight active thumbnail
-  const allThumbs = document.querySelectorAll('.thumbnail-canvas');
-  allThumbs.forEach((thumb, idx) => {
-    thumb.classList.toggle('active', idx === pageNum - 1);
+  document.querySelectorAll('.thumbnail-canvas').forEach((thumb, i) => {
+    thumb.classList.toggle('active', i === pageNum - 1);
   });
 }
 
@@ -140,7 +135,7 @@ prevPageBtn.addEventListener('click', () => {
 });
 
 nextPageBtn.addEventListener('click', () => {
-  if (currentPage < pdfDoc.numPages) {
+  if (currentPage < pageOrder.length) {
     currentPage++;
     renderPage(currentPage);
   }
@@ -148,24 +143,57 @@ nextPageBtn.addEventListener('click', () => {
 
 async function renderThumbnails() {
   thumbnailsContainer.innerHTML = '';
-
-  for (let i = 1; i <= pdfDoc.numPages; i++) {
-    const page = await pdfDoc.getPage(i);
+  for (let i = 0; i < pageOrder.length; i++) {
+    const pageIndex = pageOrder[i];
+    const page = await pdfDoc.getPage(pageIndex);
     const viewport = page.getViewport({ scale: 0.2 });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'thumbnail-wrapper';
 
     const thumbCanvas = document.createElement('canvas');
     thumbCanvas.width = viewport.width;
     thumbCanvas.height = viewport.height;
-    thumbCanvas.classList.add('thumbnail-canvas');
+    thumbCanvas.className = 'thumbnail-canvas';
 
     const thumbCtx = thumbCanvas.getContext('2d');
-    await page.render({ canvasContext: thumbCtx, viewport: viewport }).promise;
+    await page.render({ canvasContext: thumbCtx, viewport }).promise;
 
     thumbCanvas.onclick = () => {
-      currentPage = i;
+      currentPage = i + 1;
       renderPage(currentPage);
     };
 
-    thumbnailsContainer.appendChild(thumbCanvas);
+    const positionInput = document.createElement('input');
+    positionInput.className = 'thumbnail-position';
+    positionInput.type = 'number';
+    positionInput.min = 1;
+    positionInput.max = pageOrder.length;
+    positionInput.value = i + 1;
+
+    positionInput.onchange = () => {
+      const newPos = parseInt(positionInput.value) - 1;
+      if (newPos >= 0 && newPos < pageOrder.length && newPos !== i) {
+        const moved = pageOrder.splice(i, 1)[0];
+        pageOrder.splice(newPos, 0, moved);
+        renderThumbnails();
+        renderPage(currentPage);
+      }
+    };
+
+    wrapper.appendChild(thumbCanvas);
+    wrapper.appendChild(positionInput);
+    thumbnailsContainer.appendChild(wrapper);
   }
+
+  // Enable drag and drop of thumbnails
+  Sortable.create(thumbnailsContainer, {
+    animation: 150,
+    onEnd: (evt) => {
+      const [moved] = pageOrder.splice(evt.oldIndex, 1);
+      pageOrder.splice(evt.newIndex, 0, moved);
+      renderThumbnails();
+      renderPage(currentPage);
+    }
+  });
 }
