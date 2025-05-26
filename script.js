@@ -10,10 +10,11 @@ const pageCountSpan = document.getElementById('page-count');
 const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
 
+const thumbnailsContainer = document.getElementById('thumbnails');
+
 let pdfFiles = [];
-let currentPreview = null;
-let currentPage = 1;
 let pdfDoc = null;
+let currentPage = 1;
 
 uploadInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -94,47 +95,10 @@ Sortable.create(fileList, {
   }
 });
 
-// PDF Preview Logic
 async function previewPDF(file) {
   const fileReader = new FileReader();
   fileReader.onload = async function () {
     const typedarray = new Uint8Array(this.result);
 
     pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
-    currentPage = 1;
-    previewContainer.style.display = 'block';
-    pageCountSpan.textContent = pdfDoc.numPages;
-    renderPage(currentPage);
-  };
-  fileReader.readAsArrayBuffer(file);
-}
-
-async function renderPage(pageNum) {
-  const page = await pdfDoc.getPage(pageNum);
-  const viewport = page.getViewport({ scale: 1.5 });
-
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
-
-  const renderContext = {
-    canvasContext: ctx,
-    viewport: viewport
-  };
-  await page.render(renderContext).promise;
-
-  pageNumSpan.textContent = pageNum;
-}
-
-prevPageBtn.addEventListener('click', () => {
-  if (currentPage > 1) {
-    currentPage--;
-    renderPage(currentPage);
-  }
-});
-
-nextPageBtn.addEventListener('click', () => {
-  if (currentPage < pdfDoc.numPages) {
-    currentPage++;
-    renderPage(currentPage);
-  }
-});
+    cu
