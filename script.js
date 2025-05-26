@@ -101,4 +101,71 @@ async function previewPDF(file) {
     const typedarray = new Uint8Array(this.result);
 
     pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
-    cu
+    currentPage = 1;
+    previewContainer.style.display = 'block';
+    pageCountSpan.textContent = pdfDoc.numPages;
+    renderPage(currentPage);
+    renderThumbnails();
+  };
+  fileReader.readAsArrayBuffer(file);
+}
+
+async function renderPage(pageNum) {
+  const page = await pdfDoc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1.5 });
+
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+
+  const renderContext = {
+    canvasContext: ctx,
+    viewport: viewport
+  };
+  await page.render(renderContext).promise;
+
+  pageNumSpan.textContent = pageNum;
+
+  // Highlight active thumbnail
+  const allThumbs = document.querySelectorAll('.thumbnail-canvas');
+  allThumbs.forEach((thumb, idx) => {
+    thumb.classList.toggle('active', idx === pageNum - 1);
+  });
+}
+
+prevPageBtn.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderPage(currentPage);
+  }
+});
+
+nextPageBtn.addEventListener('click', () => {
+  if (currentPage < pdfDoc.numPages) {
+    currentPage++;
+    renderPage(currentPage);
+  }
+});
+
+async function renderThumbnails() {
+  thumbnailsContainer.innerHTML = '';
+
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 0.2 });
+
+    const thumbCanvas = document.createElement('canvas');
+    thumbCanvas.width = viewport.width;
+    thumbCanvas.height = viewport.height;
+    thumbCanvas.classList.add('thumbnail-canvas');
+
+    const thumbCtx = thumbCanvas.getContext('2d');
+    await page.render({ canvasContext: thumbCtx, viewport: viewport }).promise;
+
+    thumbCanvas.onclick = () => {
+      currentPage = i;
+      renderPage(currentPage);
+    };
+
+    thumbnailsContainer.appendChild(thumbCanvas);
+  }
+}
