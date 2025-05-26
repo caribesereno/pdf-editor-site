@@ -1,95 +1,108 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF Editor</title>
+  <title>PDF Editor + Page Reorder</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: sans-serif;
       padding: 20px;
+      background: #f5f5f5;
     }
-    h1 {
-      margin-bottom: 10px;
+
+    #drop-zone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: center;
+      color: #666;
+      border-radius: 8px;
+      background-color: #f9f9f9;
     }
+
     #file-queue {
-      margin: 15px 0;
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 10px;
-      border-radius: 5px;
+      margin-top: 10px;
     }
+
     .file-entry {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px;
-      border-bottom: 1px solid #eee;
+      background: #fff;
+      padding: 8px;
+      margin-bottom: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
     }
-    .file-entry:last-child {
-      border-bottom: none;
-    }
+
     .file-entry.active {
-      background-color: #e0f7fa;
-      border-left: 4px solid #00796b;
+      background-color: #e6f7ff;
+      border: 2px solid #2ecc71;
     }
+
     .file-actions button {
-      margin-left: 4px;
+      margin-left: 5px;
     }
-    canvas#pdf-canvas {
-      border: 1px solid #ccc;
-      margin-top: 15px;
-      max-width: 100%;
-    }
+
     #thumbnail-strip {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 15px;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      border-radius: 5px;
     }
-    .thumb canvas {
-      width: 100px;
-      cursor: grab;
-      border: 1px solid #aaa;
+
+    .thumb {
+      border: 1px solid #999;
       border-radius: 4px;
+      cursor: grab;
     }
-    button {
-      margin-right: 6px;
+
+    .thumb canvas {
+      display: block;
+      width: 100px;
+      height: auto;
     }
   </style>
 </head>
 <body>
-
-  <h1>PDF Editor with File Queue & Page Reordering</h1>
+  <h1>PDF Editor with Page Reordering</h1>
 
   <input type="file" id="upload" accept="application/pdf" multiple />
+  <div id="drop-zone">Drag and drop PDF files here</div>
+
   <button id="merge-btn">Merge PDFs</button>
 
-  <h3>Files queued for merging:</h3>
-  <div id="file-queue"></div>
+  <div id="file-list">
+    <strong>Files queued for merging:</strong>
+    <div id="file-queue"></div>
+  </div>
 
-  <div id="page-controls" style="display:none;">
+  <div id="page-controls" style="margin-top: 1rem; display: none;">
     <label for="delete-page">Page to delete:</label>
     <input type="number" id="delete-page" min="1" />
     <button id="delete-btn">Delete Page</button>
     <button id="download-btn">Download Edited PDF</button>
   </div>
 
-  <div id="nav-buttons" style="display:none;">
+  <div id="nav-buttons" style="margin-top: 1rem; display: none;">
     <button id="prev-page">⬅️ Previous</button>
     <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
     <button id="next-page">Next ➡️</button>
   </div>
 
   <canvas id="pdf-canvas"></canvas>
+
   <div id="thumbnail-strip" style="display:none;"></div>
 
   <!-- Libraries -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-  <script src="final-script-with-queue-preview-merge-drag.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
