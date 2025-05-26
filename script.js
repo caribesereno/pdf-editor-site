@@ -1,15 +1,13 @@
-
 const uploadInput = document.getElementById('upload');
 const dropZone = document.getElementById('drop-zone');
-const fileQueue = document.getElementById('file-queue');
-const mergeBtn = document.getElementById('merge-btn');
+const fileList = document.getElementById('file-list');
 
-let files = [];
+let pdfFiles = [];
 
 uploadInput.addEventListener('change', (e) => {
-  for (const file of e.target.files) {
-    files.push(file);
-    displayFile(file);
+  const file = e.target.files[0];
+  if (file && file.type === 'application/pdf') {
+    addFile(file);
   }
 });
 
@@ -19,49 +17,27 @@ dropZone.addEventListener('dragover', (e) => {
 });
 
 dropZone.addEventListener('dragleave', () => {
-  dropZone.style.backgroundColor = '#f9f9f9';
+  dropZone.style.backgroundColor = '#fff';
 });
 
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
-  dropZone.style.backgroundColor = '#f9f9f9';
-  for (const file of e.dataTransfer.files) {
-    if (file.type === 'application/pdf') {
-      files.push(file);
-      displayFile(file);
-    }
+  dropZone.style.backgroundColor = '#fff';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') {
+    addFile(file);
   }
 });
 
-function displayFile(file) {
-  const div = document.createElement('div');
-  div.className = 'file-entry';
-  div.draggable = true;
-  div.textContent = file.name;
-  fileQueue.appendChild(div);
+function addFile(file) {
+  pdfFiles.push(file);
+
+  const li = document.createElement('li');
+  li.textContent = file.name;
+  fileList.appendChild(li);
 }
 
-mergeBtn.addEventListener('click', async () => {
-  const { PDFDocument } = PDFLib;
-  const mergedPdf = await PDFDocument.create();
-
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await PDFDocument.load(arrayBuffer);
-    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
-  }
-
-  const mergedPdfBytes = await mergedPdf.save();
-  downloadBlob(mergedPdfBytes, 'merged.pdf', 'application/pdf');
+// Make file list draggable
+Sortable.create(fileList, {
+  animation: 150
 });
-
-function downloadBlob(data, filename, type) {
-  const blob = new Blob([data], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
