@@ -18,7 +18,6 @@
   <div id="preview-container" style="display: none;">
     <h3>PDF Preview</h3>
 
-    <!-- Page navigation moved here -->
     <div id="nav-buttons">
       <button id="prev-page">⬅️ Previous</button>
       <span>Page <span id="page-num">1</span> of <span id="page-count">1</span></span>
@@ -26,6 +25,11 @@
     </div>
 
     <canvas id="pdf-canvas"></canvas>
+
+    <div id="thumbnails-container">
+      <h4>Thumbnails</h4>
+      <div id="thumbnails"></div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
