@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ultimate PDF Editor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>PDF Toolkit</h1>
+
+  <div class="uploader">
+    <input type="file" id="pdfUpload" multiple accept="application/pdf" />
+    <button onclick="handleMerge()">Merge PDFs</button>
+    <button onclick="handleReorder()">Reorder Pages</button>
+    <button onclick="handleDelete()">Delete Pages</button>
+    <button onclick="handleSplit()">Split PDF</button>
+    <button onclick="handleCompress()">Compress PDF</button>
+    <button onclick="handleEdit()">Edit Text/Images</button>
+    <button onclick="handleSign()">Fill & Sign</button>
+  </div>
+
+  <div id="previewContainer"></div>
+
+  <script src="lib/pdf-lib.min.js"></script>
+  <script src="script.js" type="module"></script>
+</body>
+</html>
