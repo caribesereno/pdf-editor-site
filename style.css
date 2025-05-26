@@ -39,6 +39,9 @@ ul#file-list li {
 
 .file-name {
   flex: 1;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
 }
 
 .action-buttons {
@@ -58,4 +61,17 @@ ul#file-list li {
 
 .action-buttons button:hover {
   background: #0056b3;
+}
+
+canvas {
+  border: 1px solid #ccc;
+  margin-top: 20px;
+  max-width: 100%;
+}
+
+#nav-buttons {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
