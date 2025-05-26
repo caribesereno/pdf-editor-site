@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Editor with Thumbnails</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>PDF Editor</h1>
+
+  <div id="dropzone" class="uploader">
+    <p>📂 Drag & drop PDFs here or <label for="pdfUpload" class="file-label">browse</label></p>
+    <input type="file" id="pdfUpload" accept="application/pdf" hidden />
+  </div>
+
+  <div id="thumbnailContainer" class="thumbnail-grid"></div>
+
+  <div class="actions">
+    <button onclick="exportReordered()">Export Reordered PDF</button>
+    <button onclick="deleteSelectedPages()">Delete Selected Pages</button>
+  </div>
+
+  <script src="lib/pdf-lib.min.js"></script>
+  <script src="lib/pdf.js"></script>
+  <script src="script.js" type="module"></script>
+</body>
+</html>
