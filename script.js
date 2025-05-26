@@ -1,69 +1,66 @@
 import { mergePDFs } from './utils/pdfMerge.js';
-import { deletePages } from './utils/pdfDelete.js';
-import { splitPDF } from './utils/pdfSplit.js';
-import { compressPDF } from './utils/pdfCompress.js';
-import { editPDF } from './utils/pdfEdit.js';
-import { signPDF } from './utils/pdfSign.js';
+
+let selectedFiles = [];
+
+const input = document.getElementById('pdfUpload');
+
+input.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file && file.type === 'application/pdf') {
+    selectedFiles.push(file);
+    updateFileList();
+    input.value = ''; // allows re-upload of same file
+  }
+});
 
 window.handleMerge = async () => {
-  const input = document.getElementById('pdfUpload');
-  const files = input.files;
-  if (files.length < 2) return alert("Select at least 2 PDFs to merge.");
+  if (selectedFiles.length < 2) {
+    alert("Please upload at least 2 PDFs.");
+    return;
+  }
 
-  const mergedBlob = await mergePDFs(files);
-  downloadBlob(mergedBlob, 'merged.pdf');
+  try {
+    const mergedBlob = await mergePDFs(selectedFiles);
+    const url = URL.createObjectURL(mergedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'merged.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Merge failed:", err);
+    alert("There was an error merging the PDFs.");
+  }
 };
 
-window.handleDelete = async () => {
-  const input = document.getElementById('pdfUpload');
-  const file = input.files[0];
-  if (!file) return alert("Select a PDF to delete pages from.");
-
-  const deletedBlob = await deletePages(file, [0]); // Example: delete page 1
-  downloadBlob(deletedBlob, 'deleted.pdf');
+window.clearFiles = () => {
+  selectedFiles = [];
+  updateFileList();
 };
 
-window.handleSplit = async () => {
-  const input = document.getElementById('pdfUpload');
-  const file = input.files[0];
-  if (!file) return alert("Select a PDF to split.");
+function updateFileList() {
+  const container = document.getElementById('previewContainer');
+  container.innerHTML = '';
 
-  const blobs = await splitPDF(file, [2, 4]); // Example: split after pages 2 and 4
-  blobs.forEach((blob, i) => downloadBlob(blob, `split_part_${i + 1}.pdf`));
-};
+  if (selectedFiles.length === 0) {
+    container.innerHTML = '<p>No files uploaded yet.</p>';
+    return;
+  }
 
-window.handleCompress = async () => {
-  const input = document.getElementById('pdfUpload');
-  const file = input.files[0];
-  if (!file) return alert("Select a PDF to compress.");
+  const ul = document.createElement('ul');
+  selectedFiles.forEach((file, index) => {
+    const li = document.createElement('li');
+    li.textContent = `${index + 1}. ${file.name}`;
+    ul.appendChild(li);
+  });
 
-  const blob = await compressPDF(file);
-  downloadBlob(blob, 'compressed.pdf');
-};
-
-window.handleEdit = async () => {
-  const input = document.getElementById('pdfUpload');
-  const file = input.files[0];
-  if (!file) return alert("Select a PDF to edit.");
-
-  const blob = await editPDF(file);
-  downloadBlob(blob, 'edited.pdf');
-};
-
-window.handleSign = async () => {
-  const input = document.getElementById('pdfUpload');
-  const file = input.files[0];
-  if (!file) return alert("Select a PDF to sign.");
-
-  const blob = await signPDF(file);
-  downloadBlob(blob, 'signed.pdf');
-};
-
-function downloadBlob(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
+  container.appendChild(ul);
 }
+
+// Placeholder for future buttons
+window.handleReorder = () => alert("Reorder coming soon");
+window.handleDelete = () => alert("Delete coming soon");
+window.handleSplit = () => alert("Split coming soon");
+window.handleCompress = () => alert("Compress coming soon");
+window.handleEdit = () => alert("Edit coming soon");
+window.handleSign = () => alert("Sign coming soon");
