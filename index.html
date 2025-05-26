@@ -25,7 +25,80 @@
     <p>No files uploaded yet.</p>
   </div>
 
+  <!-- PDF-lib -->
   <script src="lib/pdf-lib.min.js"></script>
-  <script src="script.js" type="module"></script>
-</body>
-</html>
+
+  <!-- Inline Script -->
+  <script>
+    const input = document.getElementById("pdfUpload");
+    const preview = document.getElementById("previewContainer");
+    let selectedFiles = [];
+
+    input.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === "application/pdf") {
+        selectedFiles.push(file);
+        updateFileList();
+        input.value = ""; // reset so same file can be selected again
+      }
+    });
+
+    function updateFileList() {
+      preview.innerHTML = "";
+      if (selectedFiles.length === 0) {
+        preview.innerHTML = "<p>No files uploaded yet.</p>";
+        return;
+      }
+
+      const ul = document.createElement("ul");
+      selectedFiles.forEach((file, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${file.name}`;
+        ul.appendChild(li);
+      });
+      preview.appendChild(ul);
+    }
+
+    async function handleMerge() {
+      if (selectedFiles.length < 2) {
+        alert("Please upload at least 2 PDF files.");
+        return;
+      }
+
+      try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+
+        for (const file of selectedFiles) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+          const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+
+          copiedPages.forEach(page => mergedPdf.addPage(page));
+        }
+
+        const mergedBytes = await mergedPdf.save();
+        const blob = new Blob([mergedBytes], { type: "application/pdf" });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "merged.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Merge failed:", error);
+        alert("There was an error merging the PDFs.");
+      }
+    }
+
+    function clearFiles() {
+      selectedFiles = [];
+      updateFileList();
+    }
+
+    // Placeholder handlers
+    function handleReorder() { alert("Reorder feature coming soon."); }
+    function handleDelete() { alert("Delete feature coming soon."); }
+    function handleSplit() { alert("Split feature coming soon."); }
+    function handleCompress() { alert("Compress feature coming soon."); }
+    function
