@@ -1,4 +1,29 @@
-/* ... existing styles above ... */
+body {
+  font-family: sans-serif;
+  margin: 20px;
+  background: #f4f4f4;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 10px;
+}
+
+#drop-zone {
+  border: 2px dashed #aaa;
+  padding: 20px;
+  text-align: center;
+  background-color: #fff;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border-radius: 10px;
+  color: #555;
+}
+
+ul#file-list {
+  list-style: none;
+  padding: 0;
+  max-width: 600px;
+}
 
 ul#file-list li {
   background: #fff;
@@ -10,12 +35,88 @@ ul#file-list li {
   justify-content: space-between;
   align-items: center;
   border-radius: 5px;
-  gap: 10px;
 }
 
-.file-entry {
+.file-name {
+  flex: 1;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.action-buttons button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.action-buttons button:hover {
+  background: #0056b3;
+}
+
+canvas {
+  border: 1px solid #ccc;
+  margin-top: 20px;
+  max-width: 100%;
+}
+
+#nav-buttons {
+  margin-top: 10px;
   display: flex;
   align-items: center;
-  flex: 1;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+#thumbnails-container {
+  margin-top: 20px;
+}
+
+#thumbnails {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.thumbnail-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.thumbnail-canvas {
+  border: 2px solid transparent;
+  cursor: pointer;
+  height: 100px;
+  margin-bottom: 4px;
+}
+
+.thumbnail-canvas.active {
+  border-color: #007bff;
+}
+
+input.thumbnail-position {
+  width: 40px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+button.delete-thumb {
+  background-color: #dc3545;
+  border: none;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
 }
