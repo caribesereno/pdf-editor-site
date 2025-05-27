@@ -1,6 +1,7 @@
 const uploadInput = document.getElementById('upload');
 const dropZone = document.getElementById('drop-zone');
 const fileList = document.getElementById('file-list');
+const mergeBtn = document.getElementById('merge-btn');
 const canvas = document.getElementById('pdf-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -13,6 +14,7 @@ const deleteCurrentBtn = document.getElementById('delete-current-page');
 const thumbnailsContainer = document.getElementById('thumbnails');
 
 let pdfFiles = [];
+let selectedFiles = new Set(); // 🆕 Track selected files
 let pdfDoc = null;
 let currentPage = 1;
 let pageOrder = [];
@@ -52,6 +54,18 @@ function renderFileList() {
   pdfFiles.forEach((file, index) => {
     const li = document.createElement('li');
 
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'file-checkbox';
+    checkbox.checked = selectedFiles.has(file);
+    checkbox.onchange = () => {
+      if (checkbox.checked) {
+        selectedFiles.add(file);
+      } else {
+        selectedFiles.delete(file);
+      }
+    };
+
     const fileName = document.createElement('span');
     fileName.className = 'file-name';
     fileName.textContent = file.name;
@@ -71,6 +85,7 @@ function renderFileList() {
     actions.appendChild(upBtn);
     actions.appendChild(downBtn);
 
+    li.appendChild(checkbox);
     li.appendChild(fileName);
     li.appendChild(actions);
     fileList.appendChild(li);
@@ -233,3 +248,31 @@ async function renderThumbnails() {
     }
   });
 }
+
+// 🔀 Merge selected files
+mergeBtn.onclick = async () => {
+  if (selectedFiles.size < 2) {
+    alert('Please select at least two PDF files to merge.');
+    return;
+  }
+
+  const { PDFDocument } = PDFLib;
+  const mergedPdf = await PDFDocument.create();
+
+  for (const file of selectedFiles) {
+    const arrayBuffer = await file.arrayBuffer();
+    const tempPdf = await PDFDocument.load(arrayBuffer);
+    const copiedPages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  }
+
+  const blob = new Blob([await mergedPdf.save()], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'merged.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
