@@ -12,9 +12,10 @@ const nextPageBtn = document.getElementById('next-page');
 const goToPageInput = document.getElementById('go-to-page');
 const deleteCurrentBtn = document.getElementById('delete-current-page');
 const thumbnailsContainer = document.getElementById('thumbnails');
+const downloadEditedBtn = document.getElementById('download-edited');
 
 let pdfFiles = [];
-let selectedFiles = new Set(); // 🆕 Track selected files
+let selectedFiles = new Set();
 let pdfDoc = null;
 let currentPage = 1;
 let pageOrder = [];
@@ -249,7 +250,6 @@ async function renderThumbnails() {
   });
 }
 
-// 🔀 Merge selected files
 mergeBtn.onclick = async () => {
   if (selectedFiles.size < 2) {
     alert('Please select at least two PDF files to merge.');
@@ -267,12 +267,40 @@ mergeBtn.onclick = async () => {
   }
 
   const blob = new Blob([await mergedPdf.save()], { type: 'application/pdf' });
+  loadMergedPdf(blob);
+};
+
+async function loadMergedPdf(blob) {
+  const arrayBuffer = await blob.arrayBuffer();
+  pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+  currentPage = 1;
+  previewContainer.style.display = 'block';
+  pageCountSpan.textContent = pageOrder.length;
+  goToPageInput.max = pageOrder.length;
+  renderPage(currentPage);
+  renderThumbnails();
+}
+
+downloadEditedBtn.onclick = async () => {
+  if (!pdfDoc || pageOrder.length === 0) return;
+
+  const { PDFDocument } = PDFLib;
+  const editedPdf = await PDFDocument.create();
+  const originalBytes = await pdfDoc.getData();
+  const originalPdf = await PDFDocument.load(originalBytes);
+
+  for (let i = 0; i < pageOrder.length; i++) {
+    const pageIndex = pageOrder[i] - 1;
+    const [copied] = await editedPdf.copyPages(originalPdf, [pageIndex]);
+    editedPdf.addPage(copied);
+  }
+
+  const blob = new Blob([await editedPdf.save()], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'merged.pdf';
-  document.body.appendChild(a);
+  a.download = 'edited.pdf';
   a.click();
-  a.remove();
   URL.revokeObjectURL(url);
 };
