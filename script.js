@@ -5,7 +5,6 @@ const canvas = document.getElementById('pdf-canvas');
 const ctx = canvas.getContext('2d');
 
 const previewContainer = document.getElementById('preview-container');
-const pageNumSpan = document.getElementById('page-num');
 const pageCountSpan = document.getElementById('page-count');
 const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
@@ -114,6 +113,7 @@ async function previewPDF(file) {
 }
 
 async function renderPage(pageNum) {
+  if (pageOrder.length === 0) return;
   const logicalPage = pageOrder[pageNum - 1];
   const page = await pdfDoc.getPage(logicalPage);
   const viewport = page.getViewport({ scale: 1.5 });
@@ -124,8 +124,6 @@ async function renderPage(pageNum) {
   await page.render({ canvasContext: ctx, viewport }).promise;
 
   goToPageInput.value = pageNum;
-  pageNumSpan.textContent = pageNum;
-
   document.querySelectorAll('.thumbnail-canvas').forEach((thumb, i) => {
     thumb.classList.toggle('active', i === pageNum - 1);
   });
