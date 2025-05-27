@@ -83,8 +83,17 @@ function renderFileList() {
     downBtn.textContent = '↓';
     downBtn.onclick = () => moveFile(index, 1);
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.onclick = () => {
+      selectedFiles.delete(file);
+      pdfFiles.splice(index, 1);
+      renderFileList();
+    };
+
     actions.appendChild(upBtn);
     actions.appendChild(downBtn);
+    actions.appendChild(deleteBtn);
 
     li.appendChild(checkbox);
     li.appendChild(fileName);
