@@ -127,3 +127,18 @@ input.file-checkbox {
   transform: scale(1.2);
 }
 
+#download-edited {
+  background-color: #28a745;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#download-edited:hover {
+  background-color: #218838;
+}
+
+
