@@ -9,6 +9,8 @@ const pageNumSpan = document.getElementById('page-num');
 const pageCountSpan = document.getElementById('page-count');
 const prevPageBtn = document.getElementById('prev-page');
 const nextPageBtn = document.getElementById('next-page');
+const goToPageInput = document.getElementById('go-to-page');
+const deleteCurrentBtn = document.getElementById('delete-current-page');
 const thumbnailsContainer = document.getElementById('thumbnails');
 
 let pdfFiles = [];
@@ -100,10 +102,11 @@ async function previewPDF(file) {
   fileReader.onload = async function () {
     const typedarray = new Uint8Array(this.result);
     pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
-    currentPage = 1;
     pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+    currentPage = 1;
     previewContainer.style.display = 'block';
-    pageCountSpan.textContent = pdfDoc.numPages;
+    pageCountSpan.textContent = pageOrder.length;
+    goToPageInput.max = pageOrder.length;
     renderPage(currentPage);
     renderThumbnails();
   };
@@ -120,6 +123,7 @@ async function renderPage(pageNum) {
 
   await page.render({ canvasContext: ctx, viewport }).promise;
 
+  goToPageInput.value = pageNum;
   pageNumSpan.textContent = pageNum;
 
   document.querySelectorAll('.thumbnail-canvas').forEach((thumb, i) => {
@@ -127,19 +131,37 @@ async function renderPage(pageNum) {
   });
 }
 
-prevPageBtn.addEventListener('click', () => {
+prevPageBtn.onclick = () => {
   if (currentPage > 1) {
     currentPage--;
     renderPage(currentPage);
   }
-});
+};
 
-nextPageBtn.addEventListener('click', () => {
+nextPageBtn.onclick = () => {
   if (currentPage < pageOrder.length) {
     currentPage++;
     renderPage(currentPage);
   }
-});
+};
+
+goToPageInput.onchange = () => {
+  const page = parseInt(goToPageInput.value);
+  if (page >= 1 && page <= pageOrder.length) {
+    currentPage = page;
+    renderPage(currentPage);
+  }
+};
+
+deleteCurrentBtn.onclick = () => {
+  if (pageOrder.length === 1) return alert("Can't delete last page.");
+  pageOrder.splice(currentPage - 1, 1);
+  currentPage = Math.min(currentPage, pageOrder.length);
+  pageCountSpan.textContent = pageOrder.length;
+  goToPageInput.max = pageOrder.length;
+  renderThumbnails();
+  renderPage(currentPage);
+};
 
 async function renderThumbnails() {
   thumbnailsContainer.innerHTML = '';
@@ -160,7 +182,6 @@ async function renderThumbnails() {
     const thumbCtx = thumbCanvas.getContext('2d');
     await page.render({ canvasContext: thumbCtx, viewport }).promise;
 
-    // Preview this page on click
     thumbCanvas.onclick = () => {
       currentPage = i + 1;
       renderPage(currentPage);
@@ -178,14 +199,28 @@ async function renderThumbnails() {
       if (newPos >= 0 && newPos < pageOrder.length && newPos !== i) {
         const moved = pageOrder.splice(i, 1)[0];
         pageOrder.splice(newPos, 0, moved);
-        currentPage = newPos + 1; // ✅ show moved page
+        currentPage = newPos + 1;
         renderThumbnails();
         renderPage(currentPage);
       }
     };
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.className = 'delete-thumb';
+    deleteBtn.onclick = () => {
+      if (pageOrder.length === 1) return alert("Can't delete last page.");
+      pageOrder.splice(i, 1);
+      currentPage = Math.min(currentPage, pageOrder.length);
+      pageCountSpan.textContent = pageOrder.length;
+      goToPageInput.max = pageOrder.length;
+      renderThumbnails();
+      renderPage(currentPage);
+    };
+
     wrapper.appendChild(thumbCanvas);
     wrapper.appendChild(positionInput);
+    wrapper.appendChild(deleteBtn);
     thumbnailsContainer.appendChild(wrapper);
   }
 
@@ -194,7 +229,7 @@ async function renderThumbnails() {
     onEnd: (evt) => {
       const [moved] = pageOrder.splice(evt.oldIndex, 1);
       pageOrder.splice(evt.newIndex, 0, moved);
-      currentPage = evt.newIndex + 1; // ✅ show moved page
+      currentPage = evt.newIndex + 1;
       renderThumbnails();
       renderPage(currentPage);
     }
