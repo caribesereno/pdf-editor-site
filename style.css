@@ -12,7 +12,7 @@ h1, h2, h3, h4 {
   border: 2px dashed #aaa;
   padding: 20px;
   text-align: center;
-  background-color: #fff;
+  background: #fff;
   margin-bottom: 20px;
   cursor: pointer;
   border-radius: 10px;
@@ -37,6 +37,12 @@ ul#file-list li {
   border-radius: 5px;
 }
 
+.file-checkbox {
+  margin-right: 8px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
 .file-name {
   flex: 1;
   cursor: pointer;
@@ -58,9 +64,21 @@ ul#file-list li {
   border-radius: 4px;
   font-size: 0.85rem;
 }
-
 .action-buttons button:hover {
   background: #0056b3;
+}
+
+#merge-btn {
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  background: #17a2b8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#merge-btn:hover {
+  background: #138496;
 }
 
 canvas {
@@ -75,6 +93,44 @@ canvas {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+#download-edited {
+  background-color: #28a745;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#download-edited:hover {
+  background-color: #218838;
+}
+
+/* Phase 7: split controls */
+#split-controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#split-controls input[type="text"] {
+  padding: 4px;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#split-controls button {
+  background: #17a2b8;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#split-controls button:hover {
+  background: #138496;
 }
 
 #thumbnails-container {
@@ -92,10 +148,12 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5px;
-  border: 1px solid #ccc;
-  background: #fff;
-  border-radius: 4px;
+}
+
+.thumb-select {
+  margin-bottom: 4px;
+  transform: scale(1.2);
+  cursor: pointer;
 }
 
 .thumbnail-canvas {
@@ -122,53 +180,5 @@ button.delete-thumb {
   padding: 2px 6px;
   font-size: 0.85rem;
   border-radius: 4px;
-  cursor: pointer;
-}
-
-input.file-checkbox {
-  margin-right: 8px;
-  cursor: pointer;
-  transform: scale(1.2);
-}
-
-#download-edited {
-  background-color: #28a745;
-  border: none;
-  color: white;
-  padding: 6px 10px;
-  font-size: 0.85rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#download-edited:hover {
-  background-color: #218838;
-}
-
-input#range-split {
-  margin-top: 20px;
-  padding: 5px;
-  font-size: 1rem;
-  width: 200px;
-  margin-right: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-button {
-  font-size: 0.9rem;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: none;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.page-checkbox {
-  margin-top: 4px;
-  transform: scale(1.2);
   cursor: pointer;
 }
