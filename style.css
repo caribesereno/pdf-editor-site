@@ -141,4 +141,43 @@ input.file-checkbox {
   background-color: #218838;
 }
 
+.thumb-checkbox {
+  margin-bottom: 5px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+#split-controls {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+}
+
+#split-controls label {
+  font-weight: bold;
+}
+
+#split-controls input[type="text"] {
+  padding: 6px;
+  font-size: 0.9rem;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#split-controls button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#split-controls button:hover {
+  background-color: #5a6268;
+}
 
