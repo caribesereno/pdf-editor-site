@@ -37,24 +37,16 @@
       <div id="thumbnails" class="sortable-thumbnails"></div>
     </div>
 
-    <!-- 🆕 Phase 7: Split Controls -->
-    <div id="split-controls">
-      <h3>📖 Split PDF</h3>
+    <div id="split-section">
+      <h4>Split PDF</h4>
 
-      <!-- Range Input Method -->
+      <label for="split-range">Page Range (e.g. 1-3,5):</label>
+      <input type="text" id="split-range" />
+      <button id="split-range-btn">📤 Split by Range</button>
+
       <div>
-        <label for="range-input">Page Ranges (e.g., 1-3,5,7-9):</label>
-        <input type="text" id="range-input" placeholder="e.g., 1-3,5,7-9" />
-        <button id="split-range-btn">✂️ Split by Range</button>
-      </div>
-
-      <br />
-
-      <!-- Manual Checkbox Selection Method -->
-      <div>
-        <p>Or select pages manually:</p>
-        <button id="split-selected-btn">🧩 Split Selected → One PDF</button>
-        <button id="split-into-multiple-btn">📚 Split Each → Separate PDFs</button>
+        <button id="split-selected-btn">📤 Split Selected Pages</button>
+        <button id="split-individual-btn">📤 Split into Individual PDFs</button>
       </div>
     </div>
   </div>
