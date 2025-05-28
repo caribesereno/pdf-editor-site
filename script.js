@@ -409,4 +409,31 @@ async function loadMergedPdf(blob) {
   currentPage = 1;
   previewContainer.style.display = 'block';
   pageCountSpan.textContent = pageOrder.length;
-  goToPageInput.max
+  goToPageInput.max = pageOrder.length;
+  renderPage(currentPage);
+  renderThumbnails();
+  renderSplitManualCheckboxes();
+}
+
+downloadEditedBtn.onclick = async () => {
+  if (!pdfDoc || pageOrder.length === 0) return;
+
+  const { PDFDocument } = PDFLib;
+  const editedPdf = await PDFDocument.create();
+  const originalBytes = await pdfDoc.getData();
+  const originalPdf = await PDFDocument.load(originalBytes);
+
+  for (let i = 0; i < pageOrder.length; i++) {
+    const pageIndex = pageOrder[i] - 1;
+    const [copied] = await editedPdf.copyPages(originalPdf, [pageIndex]);
+    editedPdf.addPage(copied);
+  }
+
+  const blob = new Blob([await editedPdf.save()], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'edited.pdf';
+  a.click();
+  URL.revokeObjectURL(url);
+};
