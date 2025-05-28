@@ -14,11 +14,30 @@ const deleteCurrentBtn = document.getElementById('delete-current-page');
 const thumbnailsContainer = document.getElementById('thumbnails');
 const downloadEditedBtn = document.getElementById('download-edited');
 
+// 🔽 Phase 7 Split PDF
+const splitRangeInput = document.createElement('input');
+splitRangeInput.placeholder = 'e.g. 1-3,5,7-9';
+splitRangeInput.id = 'range-input';
+splitRangeInput.style.marginTop = '1rem';
+
+const splitRangeBtn = document.createElement('button');
+splitRangeBtn.textContent = '✂️ Split by Page Range';
+splitRangeBtn.onclick = splitByRange;
+
+const splitSelectedBtn = document.createElement('button');
+splitSelectedBtn.textContent = '✂️ Split by Selected Pages';
+splitSelectedBtn.onclick = splitBySelection;
+
+document.body.appendChild(splitRangeInput);
+document.body.appendChild(splitRangeBtn);
+document.body.appendChild(splitSelectedBtn);
+
 let pdfFiles = [];
 let selectedFiles = new Set();
 let pdfDoc = null;
 let currentPage = 1;
 let pageOrder = [];
+let originalPdfBytes = null;
 
 uploadInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -60,11 +79,8 @@ function renderFileList() {
     checkbox.className = 'file-checkbox';
     checkbox.checked = selectedFiles.has(file);
     checkbox.onchange = () => {
-      if (checkbox.checked) {
-        selectedFiles.add(file);
-      } else {
-        selectedFiles.delete(file);
-      }
+      if (checkbox.checked) selectedFiles.add(file);
+      else selectedFiles.delete(file);
     };
 
     const fileName = document.createElement('span');
@@ -91,13 +107,8 @@ function renderFileList() {
       renderFileList();
     };
 
-    actions.appendChild(upBtn);
-    actions.appendChild(downBtn);
-    actions.appendChild(deleteBtn);
-
-    li.appendChild(checkbox);
-    li.appendChild(fileName);
-    li.appendChild(actions);
+    actions.append(upBtn, downBtn, deleteBtn);
+    li.append(checkbox, fileName, actions);
     fileList.appendChild(li);
   });
 }
@@ -120,11 +131,11 @@ Sortable.create(fileList, {
     renderFileList();
   }
 });
-
 async function previewPDF(file) {
   const fileReader = new FileReader();
   fileReader.onload = async function () {
     const typedarray = new Uint8Array(this.result);
+    originalPdfBytes = typedarray;
     pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
     pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
     currentPage = 1;
@@ -205,18 +216,15 @@ async function renderThumbnails() {
     const thumbCtx = thumbCanvas.getContext('2d');
     await page.render({ canvasContext: thumbCtx, viewport }).promise;
 
-    thumbCanvas.onclick = () => {
-      currentPage = i + 1;
-      renderPage(currentPage);
-    };
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'thumb-checkbox';
 
     const positionInput = document.createElement('input');
-    positionInput.className = 'thumbnail-position';
     positionInput.type = 'number';
     positionInput.min = 1;
     positionInput.max = pageOrder.length;
     positionInput.value = i + 1;
-
     positionInput.onchange = () => {
       const newPos = parseInt(positionInput.value) - 1;
       if (newPos >= 0 && newPos < pageOrder.length && newPos !== i) {
@@ -230,20 +238,20 @@ async function renderThumbnails() {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = '🗑️';
-    deleteBtn.className = 'delete-thumb';
     deleteBtn.onclick = () => {
       if (pageOrder.length === 1) return alert("Can't delete last page.");
       pageOrder.splice(i, 1);
       currentPage = Math.min(currentPage, pageOrder.length);
-      pageCountSpan.textContent = pageOrder.length;
-      goToPageInput.max = pageOrder.length;
       renderThumbnails();
       renderPage(currentPage);
     };
 
-    wrapper.appendChild(thumbCanvas);
-    wrapper.appendChild(positionInput);
-    wrapper.appendChild(deleteBtn);
+    thumbCanvas.onclick = () => {
+      currentPage = i + 1;
+      renderPage(currentPage);
+    };
+
+    wrapper.append(thumbCanvas, checkbox, positionInput, deleteBtn);
     thumbnailsContainer.appendChild(wrapper);
   }
 
@@ -259,57 +267,80 @@ async function renderThumbnails() {
   });
 }
 
-mergeBtn.onclick = async () => {
-  if (selectedFiles.size < 2) {
-    alert('Please select at least two PDF files to merge.');
-    return;
-  }
-
-  const { PDFDocument } = PDFLib;
-  const mergedPdf = await PDFDocument.create();
-
-  for (const file of selectedFiles) {
-    const arrayBuffer = await file.arrayBuffer();
-    const tempPdf = await PDFDocument.load(arrayBuffer);
-    const copiedPages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
-  }
-
-  const blob = new Blob([await mergedPdf.save()], { type: 'application/pdf' });
-  loadMergedPdf(blob);
-};
-
-async function loadMergedPdf(blob) {
-  const arrayBuffer = await blob.arrayBuffer();
-  pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
-  currentPage = 1;
-  previewContainer.style.display = 'block';
-  pageCountSpan.textContent = pageOrder.length;
-  goToPageInput.max = pageOrder.length;
-  renderPage(currentPage);
-  renderThumbnails();
-}
-
 downloadEditedBtn.onclick = async () => {
-  if (!pdfDoc || pageOrder.length === 0) return;
-
+  if (!originalPdfBytes || pageOrder.length === 0) return;
   const { PDFDocument } = PDFLib;
-  const editedPdf = await PDFDocument.create();
-  const originalBytes = await pdfDoc.getData();
-  const originalPdf = await PDFDocument.load(originalBytes);
+  const original = await PDFDocument.load(originalPdfBytes);
+  const edited = await PDFDocument.create();
 
-  for (let i = 0; i < pageOrder.length; i++) {
-    const pageIndex = pageOrder[i] - 1;
-    const [copied] = await editedPdf.copyPages(originalPdf, [pageIndex]);
-    editedPdf.addPage(copied);
+  for (let index of pageOrder) {
+    const [copied] = await edited.copyPages(original, [index - 1]);
+    edited.addPage(copied);
   }
 
-  const blob = new Blob([await editedPdf.save()], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
+  const blob = new Blob([await edited.save()], { type: 'application/pdf' });
   const a = document.createElement('a');
-  a.href = url;
+  a.href = URL.createObjectURL(blob);
   a.download = 'edited.pdf';
   a.click();
-  URL.revokeObjectURL(url);
 };
+
+function parseRange(rangeStr) {
+  return rangeStr.split(',').flatMap(part => {
+    if (part.includes('-')) {
+      const [start, end] = part.split('-').map(Number);
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    } else {
+      return [Number(part)];
+    }
+  });
+}
+
+async function splitByRange() {
+  if (!originalPdfBytes || !splitRangeInput.value.trim()) return;
+  const pageNums = parseRange(splitRangeInput.value);
+  const { PDFDocument } = PDFLib;
+  const original = await PDFDocument.load(originalPdfBytes);
+  const splitDoc = await PDFDocument.create();
+
+  for (let num of pageNums) {
+    if (num > 0 && num <= original.getPageCount()) {
+      const [copied] = await splitDoc.copyPages(original, [num - 1]);
+      splitDoc.addPage(copied);
+    }
+  }
+
+  const blob = new Blob([await splitDoc.save()], { type: 'application/pdf' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'split-range.pdf';
+  a.click();
+}
+
+async function splitBySelection() {
+  if (!originalPdfBytes) return;
+  const { PDFDocument } = PDFLib;
+  const original = await PDFDocument.load(originalPdfBytes);
+  const selected = [];
+
+  document.querySelectorAll('.thumb-checkbox').forEach((cb, i) => {
+    if (cb.checked) selected.push(i + 1);
+  });
+
+  if (selected.length === 0) return alert('No pages selected.');
+
+  const splitDoc = await PDFDocument.create();
+  for (let num of selected) {
+    const [copied] = await splitDoc.copyPages(original, [num - 1]);
+    splitDoc.addPage(copied);
+  }
+
+  const blob = new Blob([await splitDoc.save()], { type: 'application/pdf' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'split-selected.pdf';
+  a.click();
+}
+
+
+
