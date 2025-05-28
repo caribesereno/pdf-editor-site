@@ -14,7 +14,7 @@ const deleteCurrentBtn = document.getElementById('delete-current-page');
 const thumbnailsContainer = document.getElementById('thumbnails');
 const downloadEditedBtn = document.getElementById('download-edited');
 
-// 🆕 Split PDF controls
+// Split PDF controls
 const splitSection = document.getElementById('split-section');
 const splitRangeInput = document.getElementById('split-range');
 const splitRangeBtn = document.getElementById('split-range-btn');
@@ -141,7 +141,7 @@ async function previewPDF(file) {
     goToPageInput.max = pageOrder.length;
     renderPage(currentPage);
     renderThumbnails();
-    renderSplitManualCheckboxes(); // update checkboxes for split manual
+    renderSplitManualCheckboxes();
   };
   fileReader.readAsArrayBuffer(file);
 }
@@ -221,11 +221,11 @@ async function renderThumbnails() {
     };
 
     const positionInput = document.createElement('input');
-    positionInput.className = 'thumbnail-position';
     positionInput.type = 'number';
     positionInput.min = 1;
     positionInput.max = pageOrder.length;
     positionInput.value = i + 1;
+    positionInput.className = 'thumbnail-position';
 
     positionInput.onchange = () => {
       const newPos = parseInt(positionInput.value) - 1;
@@ -272,116 +272,7 @@ async function renderThumbnails() {
   });
 }
 
-// ========== SPLIT PDF LOGIC ==========
-
-// Utility: Parse range input "1-3,5,8-9"
-function parsePageRanges(str, maxPage) {
-  const pages = new Set();
-  str.split(',').forEach(part => {
-    if (/-/.test(part)) {
-      let [start, end] = part.split('-').map(n => parseInt(n, 10));
-      if (!isNaN(start) && !isNaN(end)) {
-        for (let i = start; i <= end; i++) {
-          if (i >= 1 && i <= maxPage) pages.add(i);
-        }
-      }
-    } else {
-      let n = parseInt(part, 10);
-      if (!isNaN(n) && n >= 1 && n <= maxPage) pages.add(n);
-    }
-  });
-  return Array.from(pages).sort((a, b) => a - b);
-}
-
-splitRangeBtn.onclick = async () => {
-  if (!pdfDoc) return;
-  const maxPage = pageOrder.length;
-  const range = splitRangeInput.value.trim();
-  const pages = parsePageRanges(range, maxPage);
-  if (!pages.length) {
-    alert("No valid page numbers.");
-    return;
-  }
-  await downloadNewPdfWithPages(pages);
-};
-
-// Manual selection (checkboxes)
-function renderSplitManualCheckboxes() {
-  splitManualPages.innerHTML = '';
-  for (let i = 0; i < pageOrder.length; i++) {
-    const idx = pageOrder[i];
-    const label = document.createElement('label');
-    label.style.display = 'inline-flex'; label.style.alignItems = 'center';
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'split-page-checkbox';
-    checkbox.value = idx;
-    checkbox.id = `split-manual-chk-${i}`;
-
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(`Page ${i + 1}`));
-    splitManualPages.appendChild(label);
-  }
-}
-
-splitManualBtn.onclick = async () => {
-  if (!pdfDoc) return;
-  const checkboxes = splitManualPages.querySelectorAll('input[type="checkbox"]:checked');
-  const pages = Array.from(checkboxes).map(chk => parseInt(chk.value));
-  if (!pages.length) {
-    alert("Select at least one page.");
-    return;
-  }
-  await downloadNewPdfWithPages(pages);
-};
-
-// Split into multiple PDFs (each checked "section" is a separate file)
-splitMultiBtn.onclick = async () => {
-  if (!pdfDoc) return;
-  const allCheckboxes = splitManualPages.querySelectorAll('input[type="checkbox"]');
-  let ranges = [], current = [];
-  allCheckboxes.forEach((chk, i) => {
-    if (chk.checked) {
-      current.push(parseInt(chk.value));
-    } else if (current.length) {
-      ranges.push([...current]);
-      current = [];
-    }
-  });
-  if (current.length) ranges.push([...current]);
-  if (!ranges.length) {
-    alert("Select at least one section of consecutive pages.");
-    return;
-  }
-  // Download each range as a separate PDF
-  for (let section of ranges) {
-    await downloadNewPdfWithPages(section, true);
-  }
-  alert("All selected sections downloaded!");
-};
-
-// Utility: Download a new PDF with selected pages
-async function downloadNewPdfWithPages(pages, silent) {
-  if (!pdfDoc || !pages.length) return;
-  const { PDFDocument } = PDFLib;
-  const srcBytes = await pdfDoc.getData();
-  const srcPdf = await PDFDocument.load(srcBytes);
-  const outPdf = await PDFDocument.create();
-  for (let p of pages) {
-    const [copied] = await outPdf.copyPages(srcPdf, [p - 1]);
-    outPdf.addPage(copied);
-  }
-  const blob = new Blob([await outPdf.save()], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'split.pdf';
-  a.click();
-  URL.revokeObjectURL(url);
-  if (!silent) alert('Split PDF has been downloaded!');
-}
-
+// 🔀 Merge selected files
 mergeBtn.onclick = async () => {
   if (selectedFiles.size < 2) {
     alert('Please select at least two PDF files to merge.');
@@ -437,3 +328,109 @@ downloadEditedBtn.onclick = async () => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+// SPLIT PDF FEATURES
+function parsePageRanges(str, maxPage) {
+  const pages = new Set();
+  str.split(',').forEach(part => {
+    if (/-/.test(part)) {
+      let [start, end] = part.split('-').map(n => parseInt(n, 10));
+      if (!isNaN(start) && !isNaN(end)) {
+        for (let i = start; i <= end; i++) {
+          if (i >= 1 && i <= maxPage) pages.add(i);
+        }
+      }
+    } else {
+      let n = parseInt(part, 10);
+      if (!isNaN(n) && n >= 1 && n <= maxPage) pages.add(n);
+    }
+  });
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
+splitRangeBtn.onclick = async () => {
+  if (!pdfDoc) return;
+  const maxPage = pageOrder.length;
+  const range = splitRangeInput.value.trim();
+  const pages = parsePageRanges(range, maxPage);
+  if (!pages.length) {
+    alert("No valid page numbers.");
+    return;
+  }
+  await downloadNewPdfWithPages(pages);
+};
+
+function renderSplitManualCheckboxes() {
+  splitManualPages.innerHTML = '';
+  for (let i = 0; i < pageOrder.length; i++) {
+    const idx = pageOrder[i];
+    const label = document.createElement('label');
+    label.style.display = 'inline-flex';
+    label.style.alignItems = 'center';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'split-page-checkbox';
+    checkbox.value = idx;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(`Page ${i + 1}`));
+    splitManualPages.appendChild(label);
+  }
+}
+
+splitManualBtn.onclick = async () => {
+  if (!pdfDoc) return;
+  const checkboxes = splitManualPages.querySelectorAll('input[type="checkbox"]:checked');
+  const pages = Array.from(checkboxes).map(chk => parseInt(chk.value));
+  if (!pages.length) {
+    alert("Select at least one page.");
+    return;
+  }
+  await downloadNewPdfWithPages(pages);
+};
+
+splitMultiBtn.onclick = async () => {
+  if (!pdfDoc) return;
+  const allCheckboxes = splitManualPages.querySelectorAll('input[type="checkbox"]');
+  let ranges = [], current = [];
+  allCheckboxes.forEach((chk) => {
+    if (chk.checked) {
+      current.push(parseInt(chk.value));
+    } else if (current.length) {
+      ranges.push([...current]);
+      current = [];
+    }
+  });
+  if (current.length) ranges.push([...current]);
+
+  if (!ranges.length) {
+    alert("Select at least one section of consecutive pages.");
+    return;
+  }
+
+  for (let section of ranges) {
+    await downloadNewPdfWithPages(section, true);
+  }
+  alert("All selected sections downloaded!");
+};
+
+async function downloadNewPdfWithPages(pages, silent) {
+  if (!pdfDoc || !pages.length) return;
+  const { PDFDocument } = PDFLib;
+  const srcBytes = await pdfDoc.getData();
+  const srcPdf = await PDFDocument.load(srcBytes);
+  const outPdf = await PDFDocument.create();
+  for (let p of pages) {
+    const [copied] = await outPdf.copyPages(srcPdf, [p - 1]);
+    outPdf.addPage(copied);
+  }
+  const blob = new Blob([await outPdf.save()], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'split.pdf';
+  a.click();
+  URL.revokeObjectURL(url);
+  if (!silent) alert('Split PDF has been downloaded!');
+}
