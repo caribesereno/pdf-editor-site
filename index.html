@@ -36,6 +36,24 @@
       <h4>Thumbnails (Drag, Reorder, or Delete)</h4>
       <div id="thumbnails" class="sortable-thumbnails"></div>
     </div>
+
+    <!-- 🆕 Split PDF UI -->
+    <div id="split-section">
+      <h4>Split PDF</h4>
+      <div class="split-method">
+        <strong>1. By Page Range</strong>
+        <input id="split-range" type="text" placeholder="e.g. 1-3,5,7-9" />
+        <button id="split-range-btn">Split</button>
+      </div>
+      <div class="split-method">
+        <strong>2. By Manual Selection</strong>
+        <div id="split-manual-pages"></div>
+        <button id="split-manual-btn">Create PDF from Selected</button>
+        <button id="split-multi-btn">Split into Multiple PDFs</button>
+      </div>
+    </div>
+    <!-- /Split PDF UI -->
+
   </div>
 
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
