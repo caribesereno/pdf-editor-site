@@ -13,8 +13,9 @@
   <div id="drop-zone">Drag and drop a PDF here</div>
 
   <h2>Files queued for merging</h2>
-  <button id="merge-btn">🔀 Merge Selected PDFs</button>
   <ul id="file-list" aria-label="List of uploaded PDFs"></ul>
+
+  <button id="merge-btn">Merge Selected PDFs</button>
 
   <div id="preview-container" style="display: none;">
     <h3>PDF Preview</h3>
@@ -27,7 +28,6 @@
       </span>
       <button id="next-page">Next ➡️</button>
       <button id="delete-current-page">🗑️ Delete This Page</button>
-      <button id="download-edited">⬇️ Download Edited PDF</button>
     </div>
 
     <canvas id="pdf-canvas"></canvas>
@@ -37,23 +37,17 @@
       <div id="thumbnails" class="sortable-thumbnails"></div>
     </div>
 
-    <!-- 🆕 Split PDF UI -->
-    <div id="split-section">
+    <div id="split-tools">
       <h4>Split PDF</h4>
-      <div class="split-method">
-        <strong>1. By Page Range</strong>
-        <input id="split-range" type="text" placeholder="e.g. 1-3,5,7-9" />
-        <button id="split-range-btn">Split</button>
-      </div>
-      <div class="split-method">
-        <strong>2. By Manual Selection</strong>
-        <div id="split-manual-pages"></div>
-        <button id="split-manual-btn">Create PDF from Selected</button>
-        <button id="split-multi-btn">Split into Multiple PDFs</button>
-      </div>
+      <label for="split-range">Page Range (e.g., 1-3,5,7-8):</label>
+      <input type="text" id="split-range" />
+      <button id="split-range-btn">Split by Range</button>
+      <br><br>
+      <button id="split-selected-btn">Split Selected Pages</button>
+      <button id="split-blocks-btn">Split into Multiple PDFs by Blocks</button>
     </div>
-    <!-- /Split PDF UI -->
 
+    <button id="download-btn">Download Edited PDF</button>
   </div>
 
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
